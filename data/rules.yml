@@ -34,12 +34,10 @@ rules:
   - action: validate_question_form
   - action: action_set_question
 
-
-# - rule: OutOfScope
-#   steps: 
-#   - intent: outofScope
-#   - action: validate_question_form
-#   - action: action_custom_fallback
+- rule: OutOfScope
+  steps: 
+  - intent: outofScope
+  - action: action_custom_fallback
 
 - rule: policy_question
   steps:

@@ -314,7 +314,7 @@ class ValidateQuestionForm(FormValidationAction):
         
 
         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-        answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
+        answer_relevance = "no" #prompt_engineering(prompt=prompt).lower()
 
         if answer_relevance is "yes":
             print(updated_response_list)
@@ -378,21 +378,17 @@ class ActionActivateForm(Action):
   
 
     
-# class actionCustomFallback(Action):
-#     def name(self):
-#         return "action_custom_fallback"       
+class actionCustomFallback(Action):
+    def name(self):
+        return "action_custom_fallback"       
         
-#     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
-#         user_response = tracker.latest_message['text']
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        index = int(tracker.get_slot("question_index"))
+        updated_index = index - 1
+        dispatcher.utter_message(text="I failed to understand you. Will you please answer the question again !!")
 
-#         if tracker.get_slot("response"):
-#             updated_response = tracker.get_slot("response") + [user_response]
-#         else:
-#             updated_response = tracker.latest_message['text']
-#         print(updated_response)
-        
-#         return [SlotSet("user_response", updated_response),
-#                 SlotSet("response", None),
-#                 FollowupAction("action_set_question")]
+        return [SlotSet("question_index", updated_index),
+                SlotSet("response", None),
+                FollowupAction("action_set_question")]
 
 

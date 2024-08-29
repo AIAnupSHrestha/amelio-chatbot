@@ -180,9 +180,8 @@ stories:
   - action: validate_question_form
   - action: action_set_question
 
-# - story: Out-Of-Scope
-#   steps: 
-#   - intent: outofScope
-#   - action: validate_question_form
-#   - action: action_custom_fallback
+- story: Out-Of-Scope
+  steps: 
+  - intent: outofScope
+  - action: action_custom_fallback
 

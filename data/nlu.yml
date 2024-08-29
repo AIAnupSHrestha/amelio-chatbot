@@ -273,6 +273,31 @@ nlu:
     - [Tools for automated attendance](response)
     - [Creating a supportive work environment](response)
     - [time software](response)
+
+- intent: outofScope
+  examples: |
+    - I prefer pizza over pasta.
+    - The weather is quite nice today.
+    - I went hiking last weekend.
+    - My favorite color is blue.
+    - I think cats are better than dogs.
+    - I love watching movies in my free time.
+    - The stock market is really volatile right now.
+    - I usually go to bed around 10 PM.
+    - My favorite book is "To Kill a Mockingbird."
+    - I don't like Mondays.
+    - I recently started learning French.
+    - I believe in aliens.
+    - My car broke down yesterday.
+    - I have no opinion on that.
+    - I think ice cream is overrated.
+    - I just got a new puppy.
+    - My birthday is in December.
+    - I saw a great concert last night.
+    - I prefer tea over coffee.
+    - I like to exercise in the morning.
+
+
 - synonym: remote
   examples: |
     - Remote

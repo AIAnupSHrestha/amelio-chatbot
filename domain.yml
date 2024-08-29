@@ -11,6 +11,7 @@ intents:
 - policy_type
 - select_flexible_work_option
 - select_option
+- outofScope
 entities:
 - response
 - flexible_work_option
