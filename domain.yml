@@ -18,6 +18,8 @@ entities:
 - hr_policy_type
 - policy_name
 - option
+-applied_context
+
 slots:
   hr_policy_type:
     type: text
@@ -39,10 +41,15 @@ slots:
     - type: from_entity
       entity: policy_name
   flexible_work_option:
-    type: text
+    type: text # needs to be list
     mappings:
     - type: from_entity
       entity: flexible_work_option
+  applied_context:
+    type: list
+    mappings:
+    - type: from_entity
+      entity: applied_context
   response:
     type: text
     influence_conversation: false
@@ -81,6 +88,8 @@ actions:
 - action_greet
 - action_set_question
 - action_store_response
+- action_select_applied_context
+- actions_applied_content
 forms:
   question_form:
     required_slots:

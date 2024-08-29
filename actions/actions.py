@@ -198,6 +198,24 @@ class ActionSelectFlexibleWorkOption(Action):
     def name(self) -> Text:
         return "action_select_flexible_work_option"
     
+    def generate_questions(self, prompt):
+    # generating question for selected work options
+        questions = [] #prompt_engineering(prompt=prompt)
+
+    # storing generated question in json file
+        try:
+            with open("questions.json", 'r') as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            data = {}
+
+        start_index = max(data.keys()) + 1 if data else 1
+
+        for index, question in enumerate(questions, start_index):
+            data[index] = question
+
+        with open("questions.json", 'w') as f:
+            json.dump(data, f, indent=4)
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         flexible_work_option = tracker.get_slot('flexible_work_option')
@@ -209,6 +227,17 @@ class ActionSelectFlexibleWorkOption(Action):
         flexible_work_option = predefined_questions[selected_policy].get(flexible_work_option)
         # prompt = PROMPT_TEMPLATE.format(job_type=job_type, flexible_work_option=flexible_work_option)
         # questions = prompt_engineering(prompt=prompt)
+
+        # for option in flexible_work_option:
+        #     option = tracker.get_slot('option').split('_')
+        #     option = ' '.join(option[1:])
+        #     hr_policy_type = tracker.get_slot('hr_policy_type')
+        #     job_type = f'{hr_policy_type} for {option} work'
+        #     selected_policy = tracker.get_slot('policy_name')
+        #     flexible_work_option = predefined_questions[selected_policy].get(flexible_work_option)
+        #     prompt = PROMPT_TEMPLATE.format(job_type=job_type, flexible_work_option=flexible_work_option)
+        #     self.generate_questions(prompt)
+
         questions = "question" #flexible_questions["question_list"]
         attachments = {
             "questions": questions,
@@ -269,31 +298,6 @@ yes_no_prompt = """
 #             # return [SlotSet("question_index", index - 1), SlotSet("response", None)]
     
 
-    
-
-class ActionStoreResponse(Action):
-    def name(self):
-        return "action_store_response"
-    
-    def save_pdf(self, response):
-        response = response
-        question = flexible_questions["question_list"]
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="Policy Questions and Responses", ln=True, align='C')
-        for num in range(10):
-            pdf.multi_cell(200, 10, txt=question[str(num)], align='L')
-            pdf.multi_cell(200, 10, txt= "Ans:" + response[num], align='L')
-        pdf.output("Policy_Questions_and_Responses.pdf")
-         
-    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
-        dispatcher.utter_message(text="Your responses are recorded")
-        response = tracker.get_slot("response")
-        self.save_pdf(response)
-
-        dispatcher.utter_message(text="Saved in 'Policy_Questions_and_Responses.pdf' file!!!")
-        return []
 
 class ValidateQuestionForm(FormValidationAction):
     def name(self):
@@ -306,13 +310,11 @@ class ValidateQuestionForm(FormValidationAction):
         response_list = tracker.get_slot("user_response")
         print(tracker.get_slot("response"))
 
-
         if response_list:
             updated_response_list = response_list + [user_answer]
         else:
             updated_response_list = user_answer
         
-
         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
         answer_relevance = "no" #prompt_engineering(prompt=prompt).lower()
 
@@ -337,6 +339,9 @@ class ValidateQuestionForm(FormValidationAction):
 with open('actions/flexible_questions.json', 'r') as file:
     flexible_questions = json.load(file)
 
+with open('actions/questions.json', 'r') as file:
+    questions = json.load(file)
+
 class ActionSetQuestion(Action):
     def name(self) -> str:
         return "action_set_question"
@@ -355,6 +360,7 @@ class ActionSetQuestion(Action):
                             "9": "What are the legal implications of implementing flexible hours, and how does the policy comply with local labor laws and regulations?",
                             "10": "How will performance be evaluated for employees working flexible hours, and what criteria will be used to ensure fairness?"
                         }
+        # question_list = questions
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         question_index = str(index)
@@ -375,6 +381,59 @@ class ActionActivateForm(Action):
         updated_index = index + 1       
         return [SlotSet("question_index", index + 1), Form("question_form")]#,FollowupAction("action_custom_fallback")]
         # return [FollowupAction("action_custom_fallback")]
+
+class ActionStoreResponse(Action):
+    def name(self):
+        return "action_store_response"
+    
+    def save_pdf(self, response):
+        response = response
+        question = flexible_questions["question_list"]
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="Policy Questions and Responses", ln=True, align='C')
+        for num in range(10):
+            pdf.multi_cell(200, 10, txt=question[str(num)], align='L')
+            pdf.multi_cell(200, 10, txt= "Ans:" + response[num], align='L')
+        pdf.output("Policy_Questions_and_Responses.pdf")
+         
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
+        dispatcher.utter_message(text="Your responses are recorded")
+        response = tracker.get_slot("response")
+        self.save_pdf(response)
+
+        dispatcher.utter_message(text="Saved in 'Policy_Questions_and_Responses.pdf' file!!!")
+        return [] #[FollowupAction("action_select_applied_context")]
+    
+    
+with open('actions/apply_flexible_work_policy_questions.json', 'r') as file:
+    applied_questions = json.load(file)
+
+class ActionSelectAppliedContexts(Action):
+    def name(self) -> Text:
+        return "action_select_applied_context"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        options = applied_questions["applied_context"]
+        buttons = []
+        for key, option_val in options.items():
+            buttons.append({
+                    "payload": '/select_applied_context_option{"applied_context_option": "'+key+'"}',
+                    "title": option_val
+                })
+        dispatcher.utter_message(text="Select the work situations where flexible work policy you would like to apply:", buttons=buttons)
+
+        return []
+        
+class ActionAppliedContext(Action):
+    def name(self):
+        return "actions_applied_content"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        pass
+
   
 
     

@@ -190,6 +190,12 @@ nlu:
     - {flexible_work_option: e}
     - {flexible_work_option: f}
     - {flexible_work_option: g}
+- intent: select_applied_context
+  examples: |
+    - {applied_context_option: a}
+    - {applied_context_option: b}
+    - {applied_context_option: c}
+    - {applied_context_option: d}
 - intent: ask_question
   examples: |
     - Flexible hours

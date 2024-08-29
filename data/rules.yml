@@ -45,3 +45,8 @@ rules:
   - action: action_set_question
   - action: action_form
   - active_loop: question_form
+
+- rule: select a applied context
+  steps:
+  - intent: select_applied_context
+  - action: action_applied_content

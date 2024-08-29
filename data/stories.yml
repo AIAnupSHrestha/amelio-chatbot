@@ -42,6 +42,11 @@ stories:
     - flexible_work_option: "a"
   - action: action_select_flexible_work_option
 
+- story: select applied context
+  steps:
+  - intent: select_applied_context
+  - action: action_applied_content
+
 
 
 - story: select flexible work option
