@@ -50,3 +50,8 @@ rules:
   steps:
   - intent: select_applied_context
   - action: action_applied_content
+
+- rule: select a eligibility criteria
+  steps:
+  - intent: select_eligibility_criteria
+  - action: action_eligibility_criteria

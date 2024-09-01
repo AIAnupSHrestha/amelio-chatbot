@@ -47,6 +47,11 @@ stories:
   - intent: select_applied_context
   - action: action_applied_content
 
+- story: select eligibility criteria
+  steps:
+  - intent: select_eligibility_criteria
+  - action: action_eligibility_criteria
+
 
 
 - story: select flexible work option
