@@ -44,12 +44,20 @@ stories:
 
 - story: select applied context
   steps:
-  - intent: select_applied_context
+  - intent: select_applied_context_option
+    entities:
+    - applied_context_option: "a"
+  - slot_was_set:
+    - applied_context_option: "a"
   - action: action_applied_content
 
 - story: select eligibility criteria
   steps:
-  - intent: select_eligibility_criteria
+  - intent: select_eligibility_criteria_option
+    entities:
+    - eligibility_criteria_option: "a"
+  - slot_was_set:
+    - eligibility_criteria_option: "a"
   - action: action_eligibility_criteria
 
 

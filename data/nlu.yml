@@ -190,13 +190,14 @@ nlu:
     - {flexible_work_option: e}
     - {flexible_work_option: f}
     - {flexible_work_option: g}
-- intent: select_applied_context
+- intent: select_applied_context_option
   examples: |
     - {applied_context_option: a}
     - {applied_context_option: b}
     - {applied_context_option: c}
     - {applied_context_option: d}
-- intent: select_eligibility_criteria
+
+- intent: select_eligibility_criteria_option
   examples: |
     - {eligibility_criteria_option: a}
     - {eligibility_criteria_option: b}
@@ -287,6 +288,40 @@ nlu:
     - [Tools for automated attendance](response)
     - [Creating a supportive work environment](response)
     - [time software](response)
+    - [Assess Feasibility](response)
+    - [Evaluate Performance](response)
+    - [Identify Improvement Areas](response)
+    - [Collect feedback from participants and stakeholders to refine](response)
+    - [Analyze the cost implications](response)
+    - [versus the benefits of the pilot to make informed decisions](response)
+    - [Whether the key goals outlined for the pilot are met](response)
+    - [Feedback from employees, customers, or other stakeholders involved in the pilot](response)
+    - [Improvement in operational efficiency](response)
+    - [Whether the pilot was conducted within the budget](response)
+    - [The potential for scaling the pilot project across the organization](response)
+    - [Address through clear communication, training, and involving employees](response)
+    - [Prepare with a robust IT support plan and ensure backup systems](response)
+    - [Manage by planning resource needs in advance](response)
+    - [ensuring adequate](response)
+    - [support](response)
+    - [and staffing](response)
+    - [Mitigate by establishing clear success criteria](response)
+    - [performance indicators](response)
+    - [Address by ensuring the pilot is run](response)
+    - [adequate period](response)
+    - [gather data](response)
+  # - [](response)
+    # - [](response)
+    # - [](response)
+    # - [](response)
+    # - [](response)
+    # - [](response)
+    # - [](response)
+    # - [](response)
+    # - [](response)
+    # - [](response)
+    # - [](response)
+    # - [](response)
 
 - intent: outofScope
   examples: |
