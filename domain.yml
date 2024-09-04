@@ -113,20 +113,20 @@ actions:
 - action_applied_context_form
 - action_eligibility_criteria_form
 - validate_question_form
-- validate_applied_context_form
-- validate_eligibility_criteria_form
+# - validate_applied_context_form
+# - validate_eligibility_criteria_form
 - action_store_response
 
 forms:
   question_form:
     required_slots:
     - response
-  applied_context_form:
-    required_slots:
-    - response
-  eligibility_criteria_form:
-    required_slots:
-    - response
+  # applied_context_form:
+  #   required_slots:
+  #   - response
+  # eligibility_criteria_form:
+  #   required_slots:
+  #   - response
 
 session_config:
   session_expiration_time: 60

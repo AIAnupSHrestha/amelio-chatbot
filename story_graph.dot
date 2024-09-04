@@ -9,7 +9,7 @@ digraph  {
 7 [class=active, fontsize=12, label=action_set_question];
 8 [class=active, fontsize=12, label=action_form];
 9 [class=active, fontsize=12, label=question_form];
-11 [class="dashed active", fontsize=12, label=action_custom_fallback];
+11 [class="dashed active", fontsize=12, label=action_hr_policy];
 12 [class="intent active", fillcolor=lightblue, label="/greet", shape=rect, style=filled];
 13 [class="intent active", fillcolor=lightblue, label="/select_option", shape=rect, style=filled];
 14 [class="intent active", fillcolor=lightblue, label="/policy_type", shape=rect, style=filled];

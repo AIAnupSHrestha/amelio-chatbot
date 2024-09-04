@@ -61,6 +61,10 @@ Output should be a list of length 5: [Question 1, Question 2, Question 3, Questi
 
 with open('actions/predefined_questions.json', 'r') as file:
     predefined_questions = json.load(file)
+with open('actions/eligibility_criteria.json', 'r') as file:
+    eligibility_criteria_questions = json.load(file)
+with open('actions/apply_flexible_work_policy_questions.json', 'r') as file:
+    applied_questions = json.load(file)
 
 def get_policy_from_db(table_name, attribute_name, value):
     value = value.lower()
@@ -171,7 +175,6 @@ class ActionPolicyType(Action):
             selected_policy = 'flexible'
             if selected_policy.lower() == 'flexible':
                 options = predefined_questions[selected_policy]
-                print(options)
                 buttons = []
                 for key, option_val in options.items():
                     # buttons.append(
@@ -186,7 +189,7 @@ class ActionPolicyType(Action):
                         "payload": '/select_flexible_work_option{"flexible_work_option": "'+key+'"}',
                         "title": option_val
                     })
-                print(buttons)
+
                 dispatcher.utter_message(text="Please select your flexible work option:", buttons=buttons)
                 # dispatcher.utter_message(text="Please select your flexible work option:", attachment=message)
                 # dispatcher.utter_message(text="Please select your flexible work option:", json_message=message)
@@ -305,24 +308,65 @@ class ValidateQuestionForm(FormValidationAction):
     def name(self):
         return "validate_question_form"
     
+    predefined_questions_keys = predefined_questions["flexible"].keys()
+    applied_questions_key = applied_questions["applied_context"].keys()
+    eligibility_criteria_keys = eligibility_criteria_questions["eligibility_criteria"].keys()
+
+    def isaccessable(self, flexible_work_option, applied_context_option, eligibility_criteria_option):
+        if flexible_work_option in self.predefined_questions_keys and not applied_context_option and not eligibility_criteria_option:
+            return "flexible_work"
+        if applied_context_option in self.applied_questions_key and not flexible_work_option  and not eligibility_criteria_option:
+            return "applied_context"
+        if eligibility_criteria_option in self.eligibility_criteria_keys and not flexible_work_option and not applied_context_option:
+            return "eligibility_criteria"
+    
     def validate_response(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
         current_question = tracker.get_slot("question0")
         user_answer = tracker.latest_message.get('text')
         index = int(tracker.get_slot("question_index"))
         response_list = tracker.get_slot("user_response")
-        print(tracker.get_slot("response"))
+        response_list1 = tracker.get_slot("applied_context_response")
+        response_list2 = tracker.get_slot("eligibility_criteria_response")
 
-        if response_list:
-            updated_response_list = response_list + [user_answer]
-        else:
-            updated_response_list = user_answer
+        print(response_list, response_list1, response_list2)
+
+
+
+        flexible_work_option = tracker.get_slot("flexible_work_option")
+        applied_context_option = tracker.get_slot("applied_context_option")
+        eligibility_criteria_option = tracker.get_slot("eligibility_criteria_option")
+
+        if self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option) == "flexible_work": #flexible_work_option in self.predefined_questions_keys and (applied_context_option is None) and (eligibility_criteria_option is None):
+            if response_list:
+                updated_response_list = response_list + [user_answer]
+            else:
+                updated_response_list = user_answer
+
+        if self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option) == "applied_context": #applied_context_option in self.applied_questions_key and (flexible_work_option is None) and (eligibility_criteria_option is None):
+            if response_list1:
+                updated_response_list1 = response_list1 + [user_answer]
+            else:
+                updated_response_list1 = user_answer
+
+        if self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option) == "eligibility_criteria": #eligibility_criteria_option in self.eligibility_criteria_keys and (flexible_work_option is None) and (applied_context_option is None):
+            if response_list2:
+                updated_response_list2 = response_list2 + [user_answer]
+            else:
+                updated_response_list2 = user_answer
         
         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
         answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
 
         if answer_relevance is "yes":
-            print(updated_response_list)
-            return {"user_response": updated_response_list}
+            if self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option) == "flexible_work": #flexible_work_option in self.predefined_questions_keys and (applied_context_option is None) and (eligibility_criteria_option is None):
+                print(f"user response - {updated_response_list}")
+                return {"user_response": updated_response_list}
+            if self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option) == "applied_context": #applied_context_option in self.applied_questions_key and (flexible_work_option is None) and (eligibility_criteria_option is None):
+                print(f"user response1 - {updated_response_list1}")
+                return {"applied_context_response": updated_response_list1}
+            if self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option) == "eligibility_criteria": #eligibility_criteria_option in self.eligibility_criteria_keys and (flexible_work_option is None) and (applied_context_option is None):
+                print(f"user response2 - {updated_response_list2}")
+                return {"eligibility_criteria_response": updated_response_list2}
         
         if answer_relevance is "no":
             updated_index = index - 1
@@ -331,7 +375,24 @@ class ValidateQuestionForm(FormValidationAction):
             return {"question_index": updated_index}
     
     def submit(self, dispatcher, tracker, domain) -> List[Dict]:
-        return [FollowupAction("action_set_question")]
+        flexible_work_option = tracker.get_slot("flexible_work_option")
+        applied_context_option = tracker.get_slot("applied_context_option")
+        eligibility_criteria_option = tracker.get_slot("eligibility_criteria_option")
+
+        print(self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option))
+
+        if self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option) == "flexible_work": #flexible_work_option in self.predefined_questions_keys and (applied_context_option is None) and (eligibility_criteria_option is None):
+            print("working...")
+            return [FollowupAction("action_set_question")]
+        
+        if self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option) == "applied_context": #applied_context_option in self.applied_questions_key and (flexible_work_option is None) and (eligibility_criteria_option is None):
+            print("working1...")
+            return [FollowupAction("action_set_applied_context_question")]
+        
+        if self.isaccessable(flexible_work_option, applied_context_option, eligibility_criteria_option) == "eligibility_criteria": #eligibility_criteria_option in self.eligibility_criteria_keys and (flexible_work_option is None) and (applied_context_option is None):
+            print("working2...")
+            return [FollowupAction("action_set_eligibility_criteria_question")]
+        
     
 with open('actions/flexible_questions.json', 'r') as file:
     flexible_questions = json.load(file)
@@ -363,7 +424,7 @@ class ActionSetQuestion(Action):
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         question_index = str(index)
-        print(tracker.get_slot("user_response"))
+        # print(tracker.get_slot("user_response"))
         if index >= len(question_list):
             # return [FollowupAction("action_store_response")]
             return [FollowupAction("action_select_applied_context"),
@@ -385,15 +446,14 @@ class ActionActivateForm(Action):
 
 
 ##########################################################################################################
-with open('actions/apply_flexible_work_policy_questions.json', 'r') as file:
-    applied_questions = json.load(file)
+
 import pprint
 class ActionSelectAppliedContexts(Action):
     def name(self) -> Text:
         return "action_select_applied_context"
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        tracker.get_slot("user_response")
+        print(tracker.get_slot("flexible_work_option"))
         options = applied_questions["applied_context"]
         buttons = []
         for key, option_val in options.items():
@@ -472,7 +532,9 @@ class ActionAppliedContextSetQuestion(Action):
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         question_index = str(index)
-        print(tracker.get_slot("applied_context_response"))
+
+        # print("user response - ")
+        # print(tracker.get_slot("applied_context_response"))
         if index >= len(question_list):
             # return [FollowupAction("action_store_response")]
             return [FollowupAction("action_eligibility_criteria"),
@@ -489,43 +551,42 @@ class ActionActivateAppliedContextForm(Action):
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         index = int(tracker.get_slot("question_index"))      
-        return [SlotSet("question_index", index + 1), Form("applied_context_form")]
+        return [SlotSet("question_index", index + 1), Form("question_form")]
     
-class ValidateQuestionForm(FormValidationAction):
-    def name(self):
-        return "validate_applied_context_form"
+# class ValidateQuestionForm(FormValidationAction):
+#     def name(self):
+#         return "validate_applied_context_form"
     
-    def validate_response(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
-        current_question = tracker.get_slot("question0")
-        user_answer = tracker.latest_message.get('text')
-        index = int(tracker.get_slot("question_index"))
-        response_list = tracker.get_slot("applied_context_response")
-        print(tracker.get_slot("response"))
+#     def validate_response(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
+#         current_question = tracker.get_slot("question0")
+#         user_answer = tracker.latest_message.get('text')
+#         index = int(tracker.get_slot("question_index"))
+#         response_list = tracker.get_slot("applied_context_response")
+#         print(tracker.get_slot("response"))
 
-        if response_list:
-            updated_response_list = response_list + [user_answer]
-        else:
-            updated_response_list = user_answer
+#         if response_list:
+#             updated_response_list = response_list + [user_answer]
+#         else:
+#             updated_response_list = user_answer
         
-        prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-        answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
+#         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
+#         answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
 
-        if answer_relevance is "yes":
-            print(updated_response_list)
-            return {"applied_context_response": updated_response_list}
+#         if answer_relevance is "yes":
+#             print(updated_response_list)
+#             return {"applied_context_response": updated_response_list}
         
-        if answer_relevance is "no":
-            updated_index = index - 1
-            print(f"updated index - {updated_index}")
-            dispatcher.utter_message(text="Please enter answer relevant to the question.")
-            return {"question_index": updated_index}
+#         if answer_relevance is "no":
+#             updated_index = index - 1
+#             print(f"updated index - {updated_index}")
+#             dispatcher.utter_message(text="Please enter answer relevant to the question.")
+#             return {"question_index": updated_index}
     
-    def submit(self, dispatcher, tracker, domain) -> List[Dict]:
-        return [FollowupAction("action_set_applied_context_question")]
+#     def submit(self, dispatcher, tracker, domain) -> List[Dict]:
+#         return [FollowupAction("action_set_applied_context_question")]
     
 ####################################################################################################################
-with open('actions/eligibility_criteria.json', 'r') as file:
-    eligibility_criteria_questions = json.load(file)
+
     
 class ActionSelectEligibilityCriteria(Action):
     def name(self) -> Text:
@@ -610,7 +671,8 @@ class ActionEligibilityCriteriaQuestion(Action):
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         question_index = str(index)
-        print(tracker.get_slot("eligibility_criteria_response"))
+        # print(tracker.get_slot("eligibility_criteria_response"))
+
         if index >= len(question_list):
             return [FollowupAction("action_store_response"),
                     SlotSet("eligibility_criteria_option", None)]
@@ -627,39 +689,39 @@ class ActionActivateEligibilityCriteriaForm(Action):
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         index = int(tracker.get_slot("question_index"))      
-        return [SlotSet("question_index", index + 1), Form("eligibility_criteria_form")]
+        return [SlotSet("question_index", index + 1), Form("question_form")]
     
-class ValidateQuestionForm(FormValidationAction):
-    def name(self):
-        return "validate_eligibility_criteria_form"
+# class ValidateQuestionForm(FormValidationAction):
+#     def name(self):
+#         return "validate_eligibility_criteria_form"
     
-    def validate_response(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
-        current_question = tracker.get_slot("question0")
-        user_answer = tracker.latest_message.get('text')
-        index = int(tracker.get_slot("question_index"))
-        response_list = tracker.get_slot("eligibility_criteria_response")
-        print(tracker.get_slot("response"))
+#     def validate_response(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
+#         current_question = tracker.get_slot("question0")
+#         user_answer = tracker.latest_message.get('text')
+#         index = int(tracker.get_slot("question_index"))
+#         response_list = tracker.get_slot("eligibility_criteria_response")
+#         print(tracker.get_slot("response"))
 
-        if response_list:
-            updated_response_list = response_list + [user_answer]
-        else:
-            updated_response_list = user_answer
+#         if response_list:
+#             updated_response_list = response_list + [user_answer]
+#         else:
+#             updated_response_list = user_answer
         
-        prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-        answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
+#         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
+#         answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
 
-        if answer_relevance is "yes":
-            print(updated_response_list)
-            return {"eligibility_criteria_response": updated_response_list}
+#         if answer_relevance is "yes":
+#             print(updated_response_list)
+#             return {"eligibility_criteria_response": updated_response_list}
         
-        if answer_relevance is "no":
-            updated_index = index - 1
-            print(f"updated index - {updated_index}")
-            dispatcher.utter_message(text="Please enter answer relevant to the question.")
-            return {"question_index": updated_index}
+#         if answer_relevance is "no":
+#             updated_index = index - 1
+#             print(f"updated index - {updated_index}")
+#             dispatcher.utter_message(text="Please enter answer relevant to the question.")
+#             return {"question_index": updated_index}
     
-    def submit(self, dispatcher, tracker, domain) -> List[Dict]:
-        return [FollowupAction("action_set_eligibility_criteria_question")]
+#     def submit(self, dispatcher, tracker, domain) -> List[Dict]:
+#         return [FollowupAction("action_set_eligibility_criteria_question")]
 
 class ActionStoreResponse(Action):
     def name(self):
@@ -709,15 +771,15 @@ class actionCustomFallback(Action):
         flexible_work_option = tracker.get_slot("flexible_work_option")
         applied_context_option = tracker.get_slot("applied_context_option")
         eligibility_criteria_option = tracker.get_slot("eligibility_criteria_option")
-        if (flexible_work_option == "a" or "b" or "c" or "d" or "e" or "f" or "g"):
+        if flexible_work_option:
             return [SlotSet("question_index", updated_index),
                     SlotSet("response", None),
                     FollowupAction("action_set_question")]
-        elif (applied_context_option == "a" or "b" or "c" or "d"):
+        if applied_context_option:
             return [SlotSet("question_index", updated_index),
                     SlotSet("response", None),
                     FollowupAction("action_set_applied_context_question")]
-        elif (eligibility_criteria_option == "a" or "b" or "c" or "d" or "e" or "f"):
+        if eligibility_criteria_option:
             return [SlotSet("question_index", updated_index),
                     SlotSet("response", None),
                     FollowupAction("action_set_eligibility_criteria_question")]
