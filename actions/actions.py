@@ -189,7 +189,6 @@ class ActionPolicyType(Action):
                         "payload": '/select_flexible_work_option{"flexible_work_option": "'+key+'"}',
                         "title": option_val
                     })
-
                 dispatcher.utter_message(text="Please select your flexible work option:", buttons=buttons)
                 # dispatcher.utter_message(text="Please select your flexible work option:", attachment=message)
                 # dispatcher.utter_message(text="Please select your flexible work option:", json_message=message)
@@ -409,29 +408,28 @@ class ActionSetQuestion(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         question_list = {
-                            "0": "How will the mandatory core period be enforced, and what tools or systems will be used to track employee hours?",
-                            "1": "What provisions will be made for employees in different time zones, and how will this impact the mandatory core period?",
-                            # "2": "How will the policy accommodate employees with varying personal responsibilities, such as childcare or eldercare?",
-                            # "3": "What are the expectations for employee availability during the mandatory core period, and how will this be communicated?",
-                            # "4": "How will the policy handle requests for exceptions or adjustments to the core hours due to unforeseen circumstances?",
-                            # "5": "What guidelines will be provided for team meetings, collaboration, and communication within the flexible hours framework?",
-                            # "6": "How will the policy ensure that flexible hours do not negatively impact productivity, team cohesion, or project deadlines?",
-                            # "7": "What measures will be taken to ensure that employees do not feel pressured to work outside their chosen hours or beyond the core period?",
-                            # "8": "What are the legal implications of implementing flexible hours, and how does the policy comply with local labor laws and regulations?",
-                            # "9": "How will performance be evaluated for employees working flexible hours, and what criteria will be used to ensure fairness?"
+                            "1": "How will the mandatory core period be enforced, and what tools or systems will be used to track employee hours?",
+                            "2": "What provisions will be made for employees in different time zones, and how will this impact the mandatory core period?",
+                            # "3": "How will the policy accommodate employees with varying personal responsibilities, such as childcare or eldercare?",
+                            # "4": "What are the expectations for employee availability during the mandatory core period, and how will this be communicated?",
+                            # "5": "How will the policy handle requests for exceptions or adjustments to the core hours due to unforeseen circumstances?",
+                            # "6": "What guidelines will be provided for team meetings, collaboration, and communication within the flexible hours framework?",
+                            # "7": "How will the policy ensure that flexible hours do not negatively impact productivity, team cohesion, or project deadlines?",
+                            # "8": "What measures will be taken to ensure that employees do not feel pressured to work outside their chosen hours or beyond the core period?",
+                            # "9": "What are the legal implications of implementing flexible hours, and how does the policy comply with local labor laws and regulations?",
+                            # "10": "How will performance be evaluated for employees working flexible hours, and what criteria will be used to ensure fairness?"
                         }
         # question_list = questions
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         question_index = str(index)
-        # print(tracker.get_slot("user_response"))
-        if index >= len(question_list):
+
+        print(tracker.get_slot("user_response"))
+        if index > len(question_list):
             # return [FollowupAction("action_store_response")]
             return [FollowupAction("action_select_applied_context"),
-                    SlotSet("question_index", 0),
-                    SlotSet("flexible_work_option", None)]
-        else:
-            return [SlotSet("question0", question_list[question_index]),
+                    SlotSet("question_index", 1)]
+        return [SlotSet("question0", question_list[question_index]),
                     SlotSet("response", None),
                     FollowupAction("action_form")]
     
@@ -444,10 +442,34 @@ class ActionActivateForm(Action):
         return [SlotSet("question_index", index + 1), Form("question_form")]#,FollowupAction("action_custom_fallback")]
         # return [FollowupAction("action_custom_fallback")]
 
+class ActionStoreResponse(Action):
+    def name(self):
+        return "action_store_response"
+    
+    def save_pdf(self, response):
+        response = response
+        question = flexible_questions["question_list"]
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="Policy Questions and Responses", ln=True, align='C')
+        for num in range(10):
+            pdf.multi_cell(200, 10, txt=question[str(num)], align='L')
+            pdf.multi_cell(200, 10, txt= "Ans:" + response[num], align='L')
+        pdf.output("Policy_Questions_and_Responses.pdf")
+         
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
+        dispatcher.utter_message(text="Your responses are recorded")
+        response = tracker.get_slot("response")
+        self.save_pdf(response)
 
+        dispatcher.utter_message(text="Saved in 'Policy_Questions_and_Responses.pdf' file!!!")
+        return [] #[FollowupAction("action_select_applied_context")]
+    
 ##########################################################################################################
+with open('actions/apply_flexible_work_policy_questions.json', 'r') as file:
+    applied_questions = json.load(file)
 
-import pprint
 class ActionSelectAppliedContexts(Action):
     def name(self) -> Text:
         return "action_select_applied_context"
@@ -457,7 +479,6 @@ class ActionSelectAppliedContexts(Action):
         options = applied_questions["applied_context"]
         buttons = []
         for key, option_val in options.items():
-
             buttons.append({
                     "payload": '/select_applied_context_option{"applied_context_option": "'+key+'"}',
                     "title": option_val
@@ -498,7 +519,6 @@ class ActionAppliedContext(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         applied_context_option = tracker.get_slot('applied_context_option')
-        applied_context = applied_questions["applied_context"].get(applied_context_option)
 
         # prompt = APPLIED_CONTEXT_PROMPT_TEMPLATE.format(applied_context_option=applied_context_option)
         # questions = prompt_engineering(prompt=prompt)
@@ -513,7 +533,7 @@ class ActionAppliedContext(Action):
             "payload": "question_list"
         }
         # dispatcher.utter_attachment(attachment=attachments)
-        dispatcher.utter_message(text=f"You have selected: {applied_context}")
+        dispatcher.utter_message(text=f"You have selected: {applied_context_option}")
         dispatcher.utter_message(text="Please answer the following questions:")
         return [FollowupAction("action_set_applied_context_question")]
     
@@ -524,22 +544,20 @@ class ActionAppliedContextSetQuestion(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         question_list = {
-                            "0": "What are the key goals or objectives you hope to achieve during the six-month pilot period?",
-                            "1": "What criteria will be used to evaluate the success or failure of the pilot project?",
-                            "2": "What potential challenges or concerns do you anticipate facing during the pilot, and how do you plan to address them?",
+                            "1": "What are the key goals or objectives you hope to achieve during the six-month pilot period?",
+                            "2": "What criteria will be used to evaluate the success or failure of the pilot project?",
+                            "3": "What potential challenges or concerns do you anticipate facing during the pilot, and how do you plan to address them?",
                         }
         # question_list = questions
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         question_index = str(index)
 
-        # print("user response - ")
-        # print(tracker.get_slot("applied_context_response"))
-        if index >= len(question_list):
+        print(tracker.get_slot("user_response"))
+        if index > len(question_list):
             # return [FollowupAction("action_store_response")]
             return [FollowupAction("action_eligibility_criteria"),
-                    SlotSet("question_index", 0),
-                    SlotSet("applied_context_option"), None]
+                    SlotSet("question_index", 1)]
         else:
             return [SlotSet("question0", question_list[question_index]),
                     SlotSet("response", None),
@@ -568,9 +586,9 @@ class ActionActivateAppliedContextForm(Action):
 #             updated_response_list = response_list + [user_answer]
 #         else:
 #             updated_response_list = user_answer
-        
-#         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-#         answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
+
+        # prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
+        # answer_relevance = "no" #prompt_engineering(prompt=prompt).lower()
 
 #         if answer_relevance is "yes":
 #             print(updated_response_list)
@@ -637,7 +655,6 @@ class ActionEligibilityCriteria(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         eligibility_criteria_option = tracker.get_slot('eligibility_criteria_option')
-        eligibility_criteria_option = eligibility_criteria_questions["eligibility_criteria"].get(eligibility_criteria_option)
 
         # prompt = ELIGIBILITY_CRITERIA_PROMPT_TEMPLATE.format(eligibility_criteria_option=eligibility_criteria_option)
         # questions = prompt_engineering(prompt=prompt)
@@ -663,21 +680,20 @@ class ActionEligibilityCriteriaQuestion(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         question_list = {
-                            "0": "What specific job roles or functions do you consider as requiring constant physical presence and thus would not be eligible for flexible work arrangements?",
-                            "1": "Are there any conditions under which roles typically requiring constant physical presence might still be considered for flexible work options?",
-                            "2": "How will you determine and communicate which full-time and part-time positions are eligible for flexible work arrangements?"
+                            "1": "What specific job roles or functions do you consider as requiring constant physical presence and thus would not be eligible for flexible work arrangements?",
+                            "2": "Are there any conditions under which roles typically requiring constant physical presence might still be considered for flexible work options?",
+                            "3": "How will you determine and communicate which full-time and part-time positions are eligible for flexible work arrangements?"
                         }
         # question_list = questions
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         question_index = str(index)
-        # print(tracker.get_slot("eligibility_criteria_response"))
 
-        if index >= len(question_list):
-            return [FollowupAction("action_store_response"),
-                    SlotSet("eligibility_criteria_option", None)]
+        print(tracker.get_slot("user_response"))
+        if index > len(question_list):
+            return [FollowupAction("action_store_response")]
             # return [FollowupAction(""),
-            #         SlotSet("question_index", 0)]
+            #         SlotSet("question_index", 1)]
         else:
             return [SlotSet("question0", question_list[question_index]),
                     SlotSet("response", None),
@@ -707,8 +723,8 @@ class ActionActivateEligibilityCriteriaForm(Action):
 #         else:
 #             updated_response_list = user_answer
         
-#         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-#         answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
+        # prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
+        # answer_relevance = "no" #prompt_engineering(prompt=prompt).lower()
 
 #         if answer_relevance is "yes":
 #             print(updated_response_list)
@@ -759,6 +775,7 @@ class ActionStoreResponse(Action):
 
         dispatcher.utter_message(text="Saved in 'Policy_Questions_and_Responses.pdf' file!!!")
         return [] #[FollowupAction("action_select_applied_context")]
+
     
 class actionCustomFallback(Action):
     def name(self):
@@ -783,5 +800,11 @@ class actionCustomFallback(Action):
             return [SlotSet("question_index", updated_index),
                     SlotSet("response", None),
                     FollowupAction("action_set_eligibility_criteria_question")]
+
+        dispatcher.utter_message(text="I failed to understand you. Will you please answer the question again !!")
+
+        return [SlotSet("question_index", updated_index),
+                SlotSet("response", None),
+                FollowupAction("action_set_question")]
 
 
