@@ -387,29 +387,29 @@ class ActionActivateForm(Action):
         return [SlotSet("question_index", index + 1), Form("question_form")]#,FollowupAction("action_custom_fallback")]
         # return [FollowupAction("action_custom_fallback")]
 
-class ActionStoreResponse(Action):
-    def name(self):
-        return "action_store_response"
+# class ActionStoreResponse(Action):
+#     def name(self):
+#         return "action_store_response"
     
-    def save_pdf(self, response):
-        response = response
-        question = flexible_questions["question_list"]
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="Policy Questions and Responses", ln=True, align='C')
-        for num in range(10):
-            pdf.multi_cell(200, 10, txt=question[str(num)], align='L')
-            pdf.multi_cell(200, 10, txt= "Ans:" + response[num], align='L')
-        pdf.output("Policy_Questions_and_Responses.pdf")
+#     def save_pdf(self, response):
+#         response = response
+#         question = flexible_questions["question_list"]
+#         pdf = FPDF()
+#         pdf.add_page()
+#         pdf.set_font("Arial", size=12)
+#         pdf.cell(200, 10, txt="Policy Questions and Responses", ln=True, align='C')
+#         for num in range(10):
+#             pdf.multi_cell(200, 10, txt=question[str(num)], align='L')
+#             pdf.multi_cell(200, 10, txt= "Ans:" + response[num], align='L')
+#         pdf.output("Policy_Questions_and_Responses.pdf")
          
-    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
-        dispatcher.utter_message(text="Your responses are recorded")
-        response = tracker.get_slot("response")
-        self.save_pdf(response)
+#     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
+#         dispatcher.utter_message(text="Your responses are recorded")
+#         response = tracker.get_slot("response")
+#         self.save_pdf(response)
 
-        dispatcher.utter_message(text="Saved in 'Policy_Questions_and_Responses.pdf' file!!!")
-        return [] #[FollowupAction("action_select_applied_context")]
+#         dispatcher.utter_message(text="Saved in 'Policy_Questions_and_Responses.pdf' file!!!")
+#         return [] #[FollowupAction("action_select_applied_context")]
     
 ##########################################################################################################
 with open('actions/apply_flexible_work_policy_questions.json', 'r') as file:
@@ -505,7 +505,7 @@ class ActionAppliedContextSetQuestion(Action):
                     SlotSet("question_index", 1)]
         else:
             return [SlotSet("question0", question_list[question_index]),
-                    SlotSet("response", None),
+                    SlotSet("response_applied_context", None),
                     FollowupAction("action_applied_context_form")]
   
 class ActionActivateAppliedContextForm(Action):
@@ -516,11 +516,11 @@ class ActionActivateAppliedContextForm(Action):
         index = int(tracker.get_slot("question_index"))      
         return [SlotSet("question_index", index + 1), Form("question_form")]
     
-class ValidateQuestionForm(FormValidationAction):
+class ValidateAppliedContextForm(FormValidationAction):
     def name(self):
         return "validate_applied_context_form"
     
-    def validate_response1(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
+    def validate_response_applied_context(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
         current_question = tracker.get_slot("question0")
         user_answer = tracker.latest_message.get('text')
         index = int(tracker.get_slot("question_index"))

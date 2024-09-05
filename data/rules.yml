@@ -55,3 +55,18 @@ rules:
   steps:
   - intent: select_eligibility_criteria_option
   - action: action_eligibility_criteria
+
+- rule: Activate form - applied context
+  steps:
+  - action: action_set_applied_context_question
+  - action: action_applied_context_form
+  - active_loop: applied_context_form
+
+- rule: submit form - applied context
+  steps:
+  - active_loop: applied_context_form
+  - intent: possible_responses
+  - slot_was_set:
+    - requested_slot: null
+  - action: validate_applied_context_form
+  - action: action_set_applied_context_question
