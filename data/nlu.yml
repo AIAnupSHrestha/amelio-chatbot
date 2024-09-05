@@ -190,13 +190,13 @@ nlu:
     - {flexible_work_option: e}
     - {flexible_work_option: f}
     - {flexible_work_option: g}
-- intent: select_applied_context
+- intent: select_applied_context_option
   examples: |
     - {applied_context_option: a}
     - {applied_context_option: b}
     - {applied_context_option: c}
     - {applied_context_option: d}
-- intent: select_eligibility_criteria
+- intent: select_eligibility_criteria_option
   examples: |
     - {eligibility_criteria_option: a}
     - {eligibility_criteria_option: b}
@@ -235,7 +235,6 @@ nlu:
     - [Asynchronous Collaboration](response)
     - [Rotating Meeting Times](response)
     - [Part-Time Core Periods](response)
-    - [Remote Work Options](response)
     - [Supportive Infrastructure](response)
     - [Transparent Communication](response)
     - [Full Engagement](response)
@@ -256,37 +255,37 @@ nlu:
     - [Clear Communication](response)
     - [Team Collaboration](response)
     - [Performance Metrics](response)
-    - [Formal Request Process](response)
-    - [Manager Approval](response)
-    - [Time-Limited Adjustments](response)
-    - [Core Hour Meetings](response)
-    - [Clear Expectations](response)
-    - [Team Building Activities](response)
-    - [Performance Management](response)
-    - [Employee Wellbeing Initiatives](response)
-    - [Clear Boundaries](response)
-    - [Legal Consultation](response)
-    - [Fair Assessment](response)
-    - [How to manage flexible hours](response)
-    - [What are the options for remote work](response)
-    - [Processes for adjusting core hours](response)
-    - [Tools for team collaboration](response)
-    - [Guidelines for performance reviews](response)
-    - [Support for employee wellbeing](response)
-    - [Setting up time tracking systems](response)
-    - [Best practices for remote work](response)
-    - [Evaluating flexible scheduling requests](response)
-    - [Communication strategies for remote teams](response)
-    - [Resources for managing core hours](response)
-    - [Feedback on performance management](response)
-    - [Steps for flexible scheduling approvals](response)
-    - [Templates for performance reviews](response)
-    - [Adjusting schedules for part-time employees](response)
-    - [Managing team building activities](response)
-    - [Legal advice for flexible work policies](response)
-    - [Tools for automated attendance](response)
-    - [Creating a supportive work environment](response)
-    - [time software](response)
+    - [Formal Request Process](response1)
+    - [Manager Approval](response1)
+    - [Time-Limited Adjustments](response1)
+    - [Core Hour Meetings](response1)
+    - [Clear Expectations](response1)
+    - [Team Building Activities](response1)
+    - [Performance Management](response1)
+    - [Employee Wellbeing Initiatives](response1)
+    - [Clear Boundaries](response1)
+    - [Legal Consultation](response1)
+    - [Fair Assessment](response1)
+    - [How to manage flexible hours](response1)
+    - [What are the options for remote work](response1)
+    - [Processes for adjusting core hours](response1)
+    - [Tools for team collaboration](response1)
+    - [Guidelines for performance reviews](response1)
+    - [Support for employee wellbeing](response1)
+    - [Setting up time tracking systems](response1)
+    - [Best practices for remote work](response1)
+    - [Evaluating flexible scheduling requests](response1)
+    - [Communication strategies for remote teams](response1)
+    - [Resources for managing core hours](response1)
+    - [Feedback on performance management](response1)
+    - [Steps for flexible scheduling approvals](response1)
+    - [Templates for performance reviews](response1)
+    - [Adjusting schedules for part-time employees](response1)
+    - [Managing team building activities](response1)
+    - [Legal advice for flexible work policies](response1)
+    - [Tools for automated attendance](response1)
+    - [Creating a supportive work environment](response1)
+    - [time software](response1)
 
 - intent: outofScope
   examples: |

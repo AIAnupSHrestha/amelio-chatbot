@@ -12,10 +12,11 @@ intents:
 - select_flexible_work_option
 - select_option
 - outofScope
-- select_applied_context
-- select_eligibility_criteria
+- select_applied_context_option
+- select_eligibility_criteria_option
 entities:
 - response
+- response1
 - flexible_work_option
 - hr_policy_type
 - policy_name
@@ -65,6 +66,12 @@ slots:
     mappings:
     - type: from_entity
       entity: response
+  response1:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_entity
+      entity: response1
   applied_context_response:
     type: list
     influence_conversation: false
@@ -102,34 +109,28 @@ actions:
 - action_hr_policy
 - validate_question_form
 - action_custom_fallback
-- action_form
 - action_policy_type
 - action_greet
 - action_set_question
 - action_set_applied_context_question
-- action_store_response
 - action_select_applied_context
 - action_applied_content
 - action_eligibility_criteria
-<<<<<<< HEAD
 - action_form
 - action_applied_context_form
 - action_eligibility_criteria_form
-- validate_question_form
-# - validate_applied_context_form
+- validate_applied_context_form
 # - validate_eligibility_criteria_form
 - action_store_response
-=======
 - action_set_eligibility_criteria_question
->>>>>>> parent of 4666075 (fixed button options)
 
 forms:
   question_form:
     required_slots:
     - response
-  # applied_context_form:
-  #   required_slots:
-  #   - response
+  applied_context_form:
+    required_slots:
+    - response1
   # eligibility_criteria_form:
   #   required_slots:
   #   - response

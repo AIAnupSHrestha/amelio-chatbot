@@ -48,10 +48,10 @@ rules:
 
 - rule: select a applied context
   steps:
-  - intent: select_applied_context
+  - intent: select_applied_context_option
   - action: action_applied_content
 
 - rule: select a eligibility criteria
   steps:
-  - intent: select_eligibility_criteria
+  - intent: select_eligibility_criteria_option
   - action: action_eligibility_criteria
