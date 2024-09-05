@@ -196,6 +196,7 @@ nlu:
     - {applied_context_option: b}
     - {applied_context_option: c}
     - {applied_context_option: d}
+
 - intent: select_eligibility_criteria_option
   examples: |
     - {eligibility_criteria_option: a}
@@ -227,6 +228,7 @@ nlu:
     - [The policy will comply with local labor laws by ensuring fair treatment and appropriate working hours, taking legal implications into account](response)
     - [Performance will be evaluated based on measurable outcomes and established criteria, ensuring fairness regardless of the hours worked](response)
     - [Time Tracking Software](response)
+    - [time software](response)
     - [Project Management Tools](response)
     - [Automated Attendance Systems](response)
     - [Regular Check-ins](response)
@@ -255,7 +257,7 @@ nlu:
     - [Clear Communication](response)
     - [Team Collaboration](response)
     - [Performance Metrics](response)
-    - [Formal Request Process](response_applied_context)
+    - [Formal Request Process](response)
     - [Manager Approval](response_applied_context)
     - [Time-Limited Adjustments](response_applied_context)
     - [Core Hour Meetings](response_applied_context)
@@ -285,7 +287,6 @@ nlu:
     - [Legal advice for flexible work policies](response_applied_context)
     - [Tools for automated attendance](response_applied_context)
     - [Creating a supportive work environment](response_applied_context)
-    - [time software](response_applied_context)
 
 - intent: outofScope
   examples: |

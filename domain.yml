@@ -104,11 +104,14 @@ responses:
   - text: I am a bot, powered by Rasa.
   utter_ask_response:
   - text: Q. {question0}
+  utter_ask_response_applied_context:
+  - text: Q. {question0}
 actions:
 - action_select_flexible_work_option
 - action_hr_policy
 - validate_question_form
 - action_custom_fallback
+- action_form
 - action_policy_type
 - action_greet
 - action_set_question
@@ -116,7 +119,6 @@ actions:
 - action_select_applied_context
 - action_applied_content
 - action_eligibility_criteria
-- action_form
 - action_applied_context_form
 - action_eligibility_criteria_form
 - validate_applied_context_form
