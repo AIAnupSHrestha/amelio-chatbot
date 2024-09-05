@@ -171,7 +171,6 @@ class ActionPolicyType(Action):
             selected_policy = 'flexible'
             if selected_policy.lower() == 'flexible':
                 options = predefined_questions[selected_policy]
-                print(options)
                 buttons = []
                 for key, option_val in options.items():
                     # buttons.append(
@@ -186,7 +185,6 @@ class ActionPolicyType(Action):
                         "payload": '/select_flexible_work_option{"flexible_work_option": "'+key+'"}',
                         "title": option_val
                     })
-                print(buttons)
                 dispatcher.utter_message(text="Please select your flexible work option:", buttons=buttons)
                 # dispatcher.utter_message(text="Please select your flexible work option:", attachment=message)
                 # dispatcher.utter_message(text="Please select your flexible work option:", json_message=message)
@@ -310,8 +308,10 @@ class ValidateQuestionForm(FormValidationAction):
         user_answer = tracker.latest_message.get('text')
         index = int(tracker.get_slot("question_index"))
         response_list = tracker.get_slot("user_response")
-        print(tracker.get_slot("response"))
+        user_response = tracker.get_slot("response")
 
+        print(response_list)
+        
         if response_list:
             updated_response_list = response_list + [user_answer]
         else:
@@ -321,7 +321,7 @@ class ValidateQuestionForm(FormValidationAction):
         answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
 
         if answer_relevance is "yes":
-            print(updated_response_list)
+            print(f"flexible - {updated_response_list}")
             return {"user_response": updated_response_list}
         
         if answer_relevance is "no":
@@ -363,7 +363,6 @@ class ActionSetQuestion(Action):
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         question_index = str(index)
-        print(tracker.get_slot("user_response"))
         if index >= len(question_list):
             # return [FollowupAction("action_store_response")]
             return [FollowupAction("action_select_applied_context"),
@@ -472,7 +471,7 @@ class ActionAppliedContextSetQuestion(Action):
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         question_index = str(index)
-        print(tracker.get_slot("applied_context_response"))
+        # print(tracker.get_slot("applied_context_response"))
         if index >= len(question_list):
             # return [FollowupAction("action_store_response")]
             return [FollowupAction("action_eligibility_criteria"),
@@ -480,7 +479,7 @@ class ActionAppliedContextSetQuestion(Action):
                     SlotSet("applied_context_option"), None]
         else:
             return [SlotSet("question0", question_list[question_index]),
-                    SlotSet("response", None),
+                    SlotSet("response_applied_context", None),
                     FollowupAction("action_applied_context_form")]
   
 class ActionActivateAppliedContextForm(Action):
@@ -495,12 +494,11 @@ class ValidateQuestionForm(FormValidationAction):
     def name(self):
         return "validate_applied_context_form"
     
-    def validate_response(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
+    def validate_response_applied_context(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
         current_question = tracker.get_slot("question0")
         user_answer = tracker.latest_message.get('text')
         index = int(tracker.get_slot("question_index"))
         response_list = tracker.get_slot("applied_context_response")
-        print(tracker.get_slot("response"))
 
         if response_list:
             updated_response_list = response_list + [user_answer]
@@ -511,7 +509,7 @@ class ValidateQuestionForm(FormValidationAction):
         answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
 
         if answer_relevance is "yes":
-            print(updated_response_list)
+            print(f"applied - {updated_response_list}")
             return {"applied_context_response": updated_response_list}
         
         if answer_relevance is "no":

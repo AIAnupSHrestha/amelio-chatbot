@@ -34,6 +34,22 @@ rules:
   - action: validate_question_form
   - action: action_set_question
 
+# - rule: Activate form - applied context
+#   steps:
+#   - action: action_set_applied_context_question
+#   - action: action_applied_context_form
+#   - active_loop: applied_context_form
+
+# - rule: submit form - applied context
+#   condition:
+#   - active_loop: applied_context_form
+#   steps:
+#   - intent: possible_responses
+#   - slot_was_set:
+#     - requested_slot: null
+#   - action: validate_applied_context_form
+#   - action: action_set_applied_context_question
+
 - rule: OutOfScope
   steps: 
   - intent: outofScope

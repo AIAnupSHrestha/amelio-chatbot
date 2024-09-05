@@ -16,6 +16,7 @@ intents:
 - select_eligibility_criteria_option
 entities:
 - response
+- response_applied_context
 - flexible_work_option
 - hr_policy_type
 - policy_name
@@ -64,6 +65,12 @@ slots:
     mappings:
     - type: from_entity
       entity: response
+  response_applied_context:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_entity
+      entity: response_applied_context
   applied_context_response:
     type: list
     influence_conversation: false
@@ -96,6 +103,8 @@ responses:
   - text: I am a bot, powered by Rasa.
   utter_ask_response:
   - text: Q. {question0}
+  utter_ask_response_applied_context:
+  - text: Q. {question0}
 actions:
 - action_hr_policy
 - action_custom_fallback
@@ -123,7 +132,7 @@ forms:
     - response
   applied_context_form:
     required_slots:
-    - response
+    - response_applied_context
   eligibility_criteria_form:
     required_slots:
     - response
