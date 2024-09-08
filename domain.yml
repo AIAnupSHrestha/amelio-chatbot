@@ -14,6 +14,7 @@ intents:
 - outofScope
 - select_applied_context_option
 - select_eligibility_criteria_option
+- eligibility_criteria_possible_responses
 entities:
 - response
 - response_applied_context
@@ -96,6 +97,17 @@ slots:
     influence_conversation: false
     mappings:
     - type: custom
+  indicator:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: custom
+  custom_policy_input:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: custom
+
 responses:
   utter_goodbye:
   - text: Bye
@@ -103,8 +115,8 @@ responses:
   - text: I am a bot, powered by Rasa.
   utter_ask_response:
   - text: Q. {question0}
-  utter_ask_response_applied_context:
-  - text: Q. {question0}
+  # utter_ask_response_applied_context:
+  # - text: Q. {question0}
 actions:
 - action_hr_policy
 - action_custom_fallback
@@ -119,20 +131,26 @@ actions:
 - action_applied_content
 - action_eligibility_criteria
 - action_form
-- action_applied_context_form
-- action_eligibility_criteria_form
+# - action_applied_context_form
+# - action_eligibility_criteria_form
 - validate_question_form
-- validate_applied_context_form
-- validate_eligibility_criteria_form
+- action_validate_applied_context_form
+- action_validate_eligibility_criteria
+- action_generate_custom_policy_clause
 - action_store_response
+- action_custom_policy_input
+- action_hr_policy_observations
+- action_handle_policy_feedback
+- action_logo_and_brand_color
+- action_create_policy_document
 
 forms:
   question_form:
     required_slots:
     - response
-  applied_context_form:
-    required_slots:
-    - response_applied_context
+  # applied_context_form:
+  #   required_slots:
+  #   - response_applied_context
   eligibility_criteria_form:
     required_slots:
     - response

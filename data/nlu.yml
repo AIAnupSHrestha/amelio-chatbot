@@ -215,6 +215,7 @@ nlu:
     - Job sharing
     - flexible hours
     - working time
+    
 - intent: possible_responses
   examples: |
     - [The mandatory core period will be enforced using time-tracking tools like attendance software or online timesheets](response)
@@ -310,18 +311,21 @@ nlu:
     - [Address by ensuring the pilot is run](response_applied_context)
     - [adequate period](response_applied_context)
     - [gather data](response_applied_context)
-  # - [](response)
-    # - [](response)
-    # - [](response)
-    # - [](response)
-    # - [](response)
-    # - [](response)
-    # - [](response)
-    # - [](response)
-    # - [](response)
-    # - [](response)
-    # - [](response)
-    # - [](response)
+
+- intent: eligibility_criteria_possible_responses
+  examples: |
+    - [Positions requiring hands-on work with equipment, machinery, or physical resources](response)
+    - [Roles that involve face-to-face customer interaction, like retail or hospitality](response)
+    - [Jobs requiring supervision of physical spaces, such as security personnel](response)
+    - [Positions in healthcare (e.g., nurses, doctors) that demand on-site patient care](response)
+    - [Manufacturing and logistics roles that involve production and physical handling of goods](response)
+    - [When certain tasks within a role can be handled remotely, such as administrative work](response)
+    - [Availability of technology that can replicate physical presence, such as remote monitoring tools](response)
+    - [Special considerations for health, disability, or caregiving needs](response)
+    - [Temporary or partial flexible arrangements during off-peak hours or for certain duties](response)
+    - [Assessment of job functions to identify tasks that can be done remotely](response)
+    - [Regular reviews of role requirements based on evolving business needs](response)
+    - [Clear policies and guidelines that outline eligibility criteria for both full-time and part-time employees](response)
 
 - intent: outofScope
   examples: |

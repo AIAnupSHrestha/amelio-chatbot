@@ -237,7 +237,7 @@ class ActionSelectFlexibleWorkOption(Action):
         #     flexible_work_option = predefined_questions[selected_policy].get(flexible_work_option)
         #     prompt = PROMPT_TEMPLATE.format(job_type=job_type, flexible_work_option=flexible_work_option)
         #     self.generate_questions(prompt)
-
+        indicator = "flexible_work"
         questions = "question" #flexible_questions["question_list"]
         attachments = {
             "questions": questions,
@@ -246,7 +246,8 @@ class ActionSelectFlexibleWorkOption(Action):
         # dispatcher.utter_attachment(attachment=attachments)
         dispatcher.utter_message(text=f"You have selected: {flexible_work_option}")
         dispatcher.utter_message(text="Please answer the following questions:")
-        return [FollowupAction("action_set_question")]
+        return [SlotSet("indicator", indicator),
+                FollowupAction("action_set_question")]
         # return [SlotSet('flexible_work_option', flexible_work_option)]
 
 
@@ -387,6 +388,7 @@ class ActionActivateForm(Action):
 with open('actions/apply_flexible_work_policy_questions.json', 'r') as file:
     applied_questions = json.load(file)
 import pprint
+
 class ActionSelectAppliedContexts(Action):
     def name(self) -> Text:
         return "action_select_applied_context"
@@ -438,7 +440,7 @@ class ActionAppliedContext(Action):
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         applied_context_option = tracker.get_slot('applied_context_option')
         applied_context = applied_questions["applied_context"].get(applied_context_option)
-
+        indicator = "applied_context"
         # prompt = APPLIED_CONTEXT_PROMPT_TEMPLATE.format(applied_context_option=applied_context_option)
         # questions = prompt_engineering(prompt=prompt)
 
@@ -454,7 +456,8 @@ class ActionAppliedContext(Action):
         # dispatcher.utter_attachment(attachment=attachments)
         dispatcher.utter_message(text=f"You have selected: {applied_context}")
         dispatcher.utter_message(text="Please answer the following questions:")
-        return [FollowupAction("action_set_applied_context_question")]
+        return [SlotSet("indicator", indicator),
+                FollowupAction("action_set_applied_context_question")]
     
 class ActionAppliedContextSetQuestion(Action):
     def name(self) -> str:
@@ -474,27 +477,29 @@ class ActionAppliedContextSetQuestion(Action):
         # print(tracker.get_slot("applied_context_response"))
         if index >= len(question_list):
             # return [FollowupAction("action_store_response")]
-            return [FollowupAction("action_eligibility_criteria"),
+            return [FollowupAction("action_select_eligibility_criteria"),
                     SlotSet("question_index", 0),
                     SlotSet("applied_context_option"), None]
         else:
-            return [SlotSet("question0", question_list[question_index]),
-                    SlotSet("response_applied_context", None),
-                    FollowupAction("action_applied_context_form")]
+            dispatcher.utter_message(text=question_list[question_index])
+            return[]
+            # return [SlotSet("question0", question_list[question_index]),
+            #         SlotSet("response_applied_context", None),
+            #         FollowupAction("action_applied_context_form")]
   
-class ActionActivateAppliedContextForm(Action):
+# class ActionActivateAppliedContextForm(Action):
+#     def name(self):
+#         return "action_applied_context_form"
+    
+#     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+#         index = int(tracker.get_slot("question_index"))      
+#         return [SlotSet("question_index", index + 1), Form("applied_context_form")]
+    
+class ValidateAppliedContext(Action):
     def name(self):
-        return "action_applied_context_form"
+        return "action_validate_applied_context_form"
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        index = int(tracker.get_slot("question_index"))      
-        return [SlotSet("question_index", index + 1), Form("applied_context_form")]
-    
-class ValidateQuestionForm(FormValidationAction):
-    def name(self):
-        return "validate_applied_context_form"
-    
-    def validate_response_applied_context(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
         current_question = tracker.get_slot("question0")
         user_answer = tracker.latest_message.get('text')
         index = int(tracker.get_slot("question_index"))
@@ -506,20 +511,30 @@ class ValidateQuestionForm(FormValidationAction):
             updated_response_list = user_answer
         
         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-        answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
+        answer_relevance = "no" #prompt_engineering(prompt=prompt).lower()
 
-        if answer_relevance is "yes":
+        if answer_relevance == "yes":
+            updated_index = index + 1
             print(f"applied - {updated_response_list}")
-            return {"applied_context_response": updated_response_list}
-        
-        if answer_relevance is "no":
-            updated_index = index - 1
-            print(f"updated index - {updated_index}")
+            return [SlotSet("applied_context_response", updated_response_list),
+                    SlotSet("question_index", updated_index),
+                    FollowupAction("action_set_applied_context_question")]
+            # return {"applied_context_response": updated_response_list}
+        elif answer_relevance == "no":
             dispatcher.utter_message(text="Please enter answer relevant to the question.")
-            return {"question_index": updated_index}
+            return[FollowupAction("action_set_applied_context_question")]
+            # return {"question_index": updated_index}
     
-    def submit(self, dispatcher, tracker, domain) -> List[Dict]:
-        return [FollowupAction("action_set_applied_context_question")]
+    # def submit(self):
+    #     return [FollowupAction("action_set_applied_context_question")]
+# class Continue(Action):
+#     def name(self) -> Text:
+#         return "action_continue"
+    
+#     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+#         response = tracker.get_slot("response_applied_context")
+#         if response:
+#             return[FollowupAction("action_set_applied_context_question")]
     
 ####################################################################################################################
 with open('actions/eligibility_criteria.json', 'r') as file:
@@ -575,7 +590,7 @@ class ActionEligibilityCriteria(Action):
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         eligibility_criteria_option = tracker.get_slot('eligibility_criteria_option')
         eligibility_criteria_option = eligibility_criteria_questions["eligibility_criteria"].get(eligibility_criteria_option)
-
+        indicator = "eligibility_criteria"
         # prompt = ELIGIBILITY_CRITERIA_PROMPT_TEMPLATE.format(eligibility_criteria_option=eligibility_criteria_option)
         # questions = prompt_engineering(prompt=prompt)
 
@@ -591,7 +606,8 @@ class ActionEligibilityCriteria(Action):
         # dispatcher.utter_attachment(attachment=attachments)
         dispatcher.utter_message(text=f"You have selected: {eligibility_criteria_option}")
         dispatcher.utter_message(text="Please answer the following questions:")
-        return [FollowupAction("action_set_eligibility_criteria_question")]
+        return [SlotSet("indicator", indicator),
+                FollowupAction("action_set_eligibility_criteria_question")]
     
 class ActionEligibilityCriteriaQuestion(Action):
     def name(self) -> str:
@@ -610,33 +626,35 @@ class ActionEligibilityCriteriaQuestion(Action):
         question_index = str(index)
         print(tracker.get_slot("eligibility_criteria_response"))
         if index >= len(question_list):
-            return [FollowupAction("action_store_response"),
+            dispatcher.utter_message(text="Completed..!!")
+            return [ FollowupAction("action_add_policy"),
                     SlotSet("eligibility_criteria_option", None)]
             # return [FollowupAction(""),
             #         SlotSet("question_index", 0)]
         else:
+            dispatcher.utter_message(text=question_list[question_index])
             return [SlotSet("question0", question_list[question_index]),
-                    SlotSet("response", None),
-                    FollowupAction("action_eligibility_criteria_form")]
+                    SlotSet("response", None)]#,
+                    #FollowupAction("action_validate_eligibility_criteria")]
   
-class ActionActivateEligibilityCriteriaForm(Action):
+# class ActionActivateEligibilityCriteriaForm(Action):
+#     def name(self):
+#         return "action_eligibility_criteria_form"
+    
+#     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+#         index = int(tracker.get_slot("question_index"))      
+#         return [SlotSet("question_index", index + 1), Form("eligibility_criteria_form")]
+    
+class ActionValidateQuestionForm(FormValidationAction):
     def name(self):
-        return "action_eligibility_criteria_form"
+        return "action_validate_eligibility_criteria"
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        index = int(tracker.get_slot("question_index"))      
-        return [SlotSet("question_index", index + 1), Form("eligibility_criteria_form")]
-    
-class ValidateQuestionForm(FormValidationAction):
-    def name(self):
-        return "validate_eligibility_criteria_form"
-    
-    def validate_response(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
         current_question = tracker.get_slot("question0")
         user_answer = tracker.latest_message.get('text')
         index = int(tracker.get_slot("question_index"))
         response_list = tracker.get_slot("eligibility_criteria_response")
-        print(tracker.get_slot("response"))
+        print(response_list)
 
         if response_list:
             updated_response_list = response_list + [user_answer]
@@ -644,20 +662,24 @@ class ValidateQuestionForm(FormValidationAction):
             updated_response_list = user_answer
         
         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-        answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
+        answer_relevance = "no" #prompt_engineering(prompt=prompt).lower()
 
         if answer_relevance is "yes":
-            print(updated_response_list)
-            return {"eligibility_criteria_response": updated_response_list}
-        
-        if answer_relevance is "no":
-            updated_index = index - 1
-            print(f"updated index - {updated_index}")
+            updated_index = index + 1
+            # print(updated_response_list)
+            return[SlotSet("question_index", updated_index),
+                   SlotSet("eligibility_criteria_response", updated_response_list),
+                   FollowupAction("action_set_eligibility_criteria_question")]
+            # return {"eligibility_criteria_response": updated_response_list}
+        elif answer_relevance is "no":
             dispatcher.utter_message(text="Please enter answer relevant to the question.")
-            return {"question_index": updated_index}
+            # return {"question_index": updated_index}
+            return[FollowupAction("action_set_eligibility_criteria_question ")]
     
     def submit(self, dispatcher, tracker, domain) -> List[Dict]:
         return [FollowupAction("action_set_eligibility_criteria_question")]
+    
+##################################################################################################################
 
 class ActionStoreResponse(Action):
     def name(self):
@@ -701,23 +723,73 @@ class actionCustomFallback(Action):
         return "action_custom_fallback"       
         
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
-        index = int(tracker.get_slot("question_index"))
-        updated_index = index - 1
-        dispatcher.utter_message(text="I failed to understand you. Will you please rephrase the answer !!")
-        flexible_work_option = tracker.get_slot("flexible_work_option")
-        applied_context_option = tracker.get_slot("applied_context_option")
-        eligibility_criteria_option = tracker.get_slot("eligibility_criteria_option")
-        if (flexible_work_option == "a" or "b" or "c" or "d" or "e" or "f" or "g"):
-            return [SlotSet("question_index", updated_index),
-                    SlotSet("response", None),
-                    FollowupAction("action_set_question")]
-        elif (applied_context_option == "a" or "b" or "c" or "d"):
-            return [SlotSet("question_index", updated_index),
-                    SlotSet("response", None),
-                    FollowupAction("action_set_applied_context_question")]
-        elif (eligibility_criteria_option == "a" or "b" or "c" or "d" or "e" or "f"):
-            return [SlotSet("question_index", updated_index),
-                    SlotSet("response", None),
-                    FollowupAction("action_set_eligibility_criteria_question")]
+        indicator = tracker.get_slot("indicator")
+        print(indicator)
+        if (indicator == "flexible_work"):
+            return [FollowupAction("validate_question_form")]
+        elif (indicator == "applied_context"):
+            return [FollowupAction("action_validate_applied_context_form")]
+        elif (indicator == "eligibility_criteria"):
+            return [FollowupAction("action_validate_eligibility_criteria")]
+
+custom_policy_prompt = """
+
+"""
+class ActionGenerateCustomPolicyClause(Action):
+    def name(self):
+        return "action_generate_custom_policy_clause"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        dispatcher.utter_message(text="what would you like to add in your policy?")
+        return[FollowupAction("action_track_custom_policy_input")]
+    
+    class ActionTrackCustomPolicyInput(Action):
+        def name(self):
+            return "action_track_custom_policy_input"
+        
+        def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+            user_custom_policy = tracker.latest_message.get("text")
+            prompt = PROMPT_TEMPLATE.format(custom_policy=user_custom_policy)
+            custom_policy = prompt_engineering(prompt=prompt)
+            dispatcher.utter_message(text=f" Custom policy generated according to your instruction: {custom_policy}")
+            return [SlotSet("custom_policy_input", custom_policy),
+                    FollowupAction("action_hr_policy_observations")]
+    
 
 
+class ActionHRPolicyObservation(Action):
+    def name(self):
+        return "action_hr_policy_observations"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        dispatcher.utter_message(text="This is a remote work HR policy, are we missing something in this policy? (Yes/No)")
+        return [FollowupAction("action_handle_policy_feedback")]
+    
+class ActionHRPolicyObservation(Action):
+    def name(self):
+        return "action_handle_policy_feedback"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        user_response = tracker.latest_message.get("text").lower()
+
+        if "yes" in user_response:
+            dispatcher.utter_message(text="")
+        else:
+            dispatcher.utter_message(text="Great! Can you provide the company's logo and brand color for inclusion in the policy?")
+            return [FollowupAction("action_logo_and_brand_color")]
+        
+class ActionLogoBrandColor(Action):
+    def name(self):
+        return "action_logo_and_brand_color"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        dispatcher.utter_message(text="Company's Logo and Brand Color is recorded. Thank you for time!!")
+        return [FollowupAction("action_create_policy_document")]
+    
+class ActionCreatePolicyDocument(Action):
+    def name(self):
+        return "action_create_policy_document"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        dispatcher.utter_message(text="Company's Logo and Brand Color is recorded. Thank you for time!!")
+        return []

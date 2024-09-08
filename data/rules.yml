@@ -36,19 +36,35 @@ rules:
 
 # - rule: Activate form - applied context
 #   steps:
-#   - action: action_set_applied_context_question
-#   - action: action_applied_context_form
 #   - active_loop: applied_context_form
+#   - action: action_set_applied_context_question
 
 # - rule: submit form - applied context
-#   condition:
-#   - active_loop: applied_context_form
 #   steps:
-#   - intent: possible_responses
-#   - slot_was_set:
-#     - requested_slot: null
 #   - action: validate_applied_context_form
 #   - action: action_set_applied_context_question
+
+- rule: continue 1
+  steps:
+  - action: action_set_applied_context_question
+  - intent: possible_responses
+  - action: action_validate_applied_context_form
+
+- rule: continue 2
+  steps:
+  - intent: possible_responses
+  - action: action_validate_applied_context_form
+  
+- rule: continue eligibility_criteria 1
+  steps:
+  - action: action_set_eligibility_criteria_question
+  - intent: eligibility_criteria_possible_responses
+  - action: action_validate_eligibility_criteria
+
+- rule: continue eligibility_criteria 2
+  steps:
+  - intent: eligibility_criteria_possible_responses
+  - action: action_validate_eligibility_criteria
 
 - rule: OutOfScope
   steps: 
