@@ -17,22 +17,22 @@ rules:
   - intent: greet
   - action: action_greet
 
-- rule: Activate form
-  steps:
-  - intent: ask_question
-  - action: action_set_question
-  - action: action_form
-  - active_loop: question_form
+# - rule: Activate form
+#   steps:
+#   - intent: ask_question
+#   - action: action_set_question
+#   - action: action_form
+#   - active_loop: question_form
 
-- rule: submit form
-  condition:
-  - active_loop: question_form
-  steps:
-  - intent: possible_responses
-  - slot_was_set:
-    - requested_slot: null
-  - action: validate_question_form
-  - action: action_set_question
+# - rule: submit form
+#   condition:
+#   - active_loop: question_form
+#   steps:
+#   - intent: possible_responses
+#   - slot_was_set:
+#     - requested_slot: null
+#   - action: validate_question_form
+#   - action: action_set_question
 
 # - rule: Activate form - applied context
 #   steps:
@@ -44,39 +44,53 @@ rules:
 #   - action: validate_applied_context_form
 #   - action: action_set_applied_context_question
 
-- rule: continue 1
-  steps:
-  - action: action_set_applied_context_question
-  - intent: possible_responses
-  - action: action_validate_applied_context_form
+# - rule: continue flexible_work 1
+#   steps:
+#   - action: action_set_applied_context_question
+#   - intent: action_custom_fallback
+#   - action: action_validate_applied_context_form
 
-- rule: continue 2
-  steps:
-  - intent: possible_responses
-  - action: action_validate_applied_context_form
+# - rule: continue flexible_work 2
+#   steps:
+#   - intent: action_custom_fallback
+#   - action: action_validate_applied_context_form
+
+# - rule: continue applied_context 1
+#   steps:
+#   - action: action_set_applied_context_question
+#   - intent: action_custom_fallback
+#   - action: action_validate_applied_context_form
+
+# - rule: continue applied_context 2
+#   steps:
+#   - intent: action_custom_fallback
+#   - action: action_validate_applied_context_form
   
-- rule: continue eligibility_criteria 1
-  steps:
-  - action: action_set_eligibility_criteria_question
-  - intent: eligibility_criteria_possible_responses
-  - action: action_validate_eligibility_criteria
+# - rule: continue eligibility_criteria 1
+#   steps:
+#   - action: action_set_eligibility_criteria_question
+#   - intent: action_custom_fallback
+#   - action: action_validate_eligibility_criteria
 
-- rule: continue eligibility_criteria 2
-  steps:
-  - intent: eligibility_criteria_possible_responses
-  - action: action_validate_eligibility_criteria
+# - rule: continue eligibility_criteria 2
+#   steps:
+#   - intent: action_custom_fallback
+#   - action: action_validate_eligibility_criteria
 
 - rule: OutOfScope
   steps: 
   - intent: outofScope
   - action: action_custom_fallback
 
-- rule: policy_question
+- rule: policy_observations_rule
   steps:
-  - intent: ask_question
-  - action: action_set_question
-  - action: action_form
-  - active_loop: question_form
+  - intent: policy_observations
+  - action: action_handle_policy_feedback
+
+- rule: select a flexible work
+  steps:
+  - intent: select_flexible_work_option
+  - action: action_select_flexible_work_option
 
 - rule: select a applied context
   steps:

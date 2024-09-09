@@ -2,19 +2,20 @@ version: '3.1'
 config:
   store_entities_as_slots: true
 intents:
-- ask_question
+# - ask_question
 - bot_challenge
 - goodbye
 - greet
 - hr_policy
-- possible_responses
+# - flexible_work_possible_responses
+# - applied_context_possible_responses
 - policy_type
 - select_flexible_work_option
 - select_option
 - outofScope
 - select_applied_context_option
 - select_eligibility_criteria_option
-- eligibility_criteria_possible_responses
+# - eligibility_criteria_possible_responses
 entities:
 - response
 - response_applied_context
@@ -113,8 +114,8 @@ responses:
   - text: Bye
   utter_iamabot:
   - text: I am a bot, powered by Rasa.
-  utter_ask_response:
-  - text: Q. {question0}
+  # utter_ask_response:
+  # - text: Q. {question0}
   # utter_ask_response_applied_context:
   # - text: Q. {question0}
 actions:
@@ -131,29 +132,31 @@ actions:
 - action_applied_content
 - action_eligibility_criteria
 - action_form
+- action_generate_custom_policy_clause
+- action_track_custom_policy_input
 # - action_applied_context_form
 # - action_eligibility_criteria_form
-- validate_question_form
+- action_validate_flexible_work
 - action_validate_applied_context_form
 - action_validate_eligibility_criteria
-- action_generate_custom_policy_clause
 - action_store_response
 - action_custom_policy_input
 - action_hr_policy_observations
 - action_handle_policy_feedback
 - action_logo_and_brand_color
 - action_create_policy_document
+- action_missing_policy
 
-forms:
-  question_form:
-    required_slots:
-    - response
+# forms:
+#   question_form:
+#     required_slots:
+#     - response
   # applied_context_form:
   #   required_slots:
   #   - response_applied_context
-  eligibility_criteria_form:
-    required_slots:
-    - response
+  # eligibility_criteria_form:
+  #   required_slots:
+  #   - response
 
 session_config:
   session_expiration_time: 60
