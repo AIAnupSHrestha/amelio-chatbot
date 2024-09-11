@@ -534,16 +534,16 @@ class ValidateAppliedContext(Action):
             updated_response_list = user_answer
         
         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-        answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
+        answer_relevance = prompt_engineering(prompt=prompt).lower()
 
-        if answer_relevance == "yes":
+        if answer_relevance == "yes.":
             updated_index = index + 1
             print(f"applied - {updated_response_list}")
             return [SlotSet("applied_context_response", updated_response_list),
                     SlotSet("question_index", updated_index),
                     FollowupAction("action_set_applied_context_question")]
             # return {"applied_context_response": updated_response_list}
-        elif answer_relevance == "no":
+        elif answer_relevance == "no.":
             dispatcher.utter_message(text="Please enter answer relevant to the question.")
             return[FollowupAction("action_set_applied_context_question")]
             # return {"question_index": updated_index}
@@ -596,10 +596,10 @@ class ActionEligibilityCriteria(Action):
         return "action_eligibility_criteria"
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        # option = tracker.get_slot('option').split('_')
-        # option = ' '.join(option[1:])
-        # hr_policy_type = tracker.get_slot('hr_policy_type')
-        job_type = "remote work for HR Policy"  #f'{hr_policy_type} for {option} work'
+        option = tracker.get_slot('option').split('_')
+        option = ' '.join(option[1:])
+        hr_policy_type = tracker.get_slot('hr_policy_type')
+        job_type = f'{hr_policy_type} for {option} work'
 
         eligibility_criteria_option = tracker.get_slot('eligibility_criteria_option')
         eligibility_criteria_option = eligibility_criteria_questions["eligibility_criteria"].get(eligibility_criteria_option)
@@ -713,23 +713,34 @@ class ActionStoreResponse(Action):
         eligibility_question = eligibility_criteria_question[0]
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", size=12)
+        pdf.set_font("Arial", style='B', size=14)
         # flexible work policy
         pdf.cell(200, 10, txt="Policy Questions and Responses", ln=True, align='C')
+        pdf.ln(10)
+        pdf.cell(200, 10, txt="1. Elements to be include in your flexible work policy?", ln=True, align='L')
+        pdf.set_font("Arial", size=12)
         for num in range(len(flexible_question)):
-            pdf.multi_cell(200, 10, txt="Q." + flexible_question[str(num)], align='L')
+            pdf.multi_cell(200, 10, txt="Q." + flexible_question[num], align='L')
             pdf.multi_cell(200, 10, txt= "Ans: " + flexible_response[num], align='L')
         
+        pdf.ln(10)
+
         # contexts likely to apply flexible work policy
-        pdf.cell(200, 10, txt="contexts likely to apply flexible work policy", ln=True, align='C')
+        pdf.set_font("Arial", style='B', size=14)
+        pdf.cell(200, 10, txt="2. Contexts likely to apply on flexible work policy", ln=True, align='L')
+        pdf.set_font("Arial", size=12)
         for num in range(len(applied_question)):
-            pdf.multi_cell(200, 10, txt="Q." + applied_question[str(num)], align='L')
+            pdf.multi_cell(200, 10, txt="Q." + applied_question[num], align='L')
             pdf.multi_cell(200, 10, txt= "Ans: " + applied_context_response[num], align='L')
 
+        pdf.ln(10)
+        
         # eligibility criteria
-        pdf.cell(200, 10, txt="eligibility criteria", ln=True, align='C')
+        pdf.set_font("Arial", style='B', size=14)
+        pdf.cell(200, 10, txt="3. Eligibility criteria", ln=True, align='L')
+        pdf.set_font("Arial", size=12)
         for num in range(len(eligibility_question)):
-            pdf.multi_cell(200, 10, txt="Q." + eligibility_question[str(num)], align='L')
+            pdf.multi_cell(200, 10, txt="Q." + eligibility_question[num], align='L')
             pdf.multi_cell(200, 10, txt= "Ans: " + eligibility_criteria_response[num], align='L')
         pdf.output("Policy_Questions_and_Responses.pdf")
          
