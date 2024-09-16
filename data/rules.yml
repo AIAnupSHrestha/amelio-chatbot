@@ -17,6 +17,14 @@ rules:
   - intent: greet
   - action: action_greet
 
+# - rule: hr_policy
+#   condition: 
+#     - slot_was_set: 
+#       - indicator: Null
+#   steps:
+#   - action: action_hr_policy
+#   - intent: hr_policy
+
 # - rule: Activate form
 #   steps:
 #   - intent: ask_question
@@ -122,3 +130,20 @@ rules:
   - intent: outofScope
   - action: action_custom_fallback
   - action: action_validate_eligibility_criteria
+
+- rule: logo
+  steps:
+  - intent: test_data
+  - action: action_logo
+
+- rule: color
+  steps:
+  - intent: brand_color
+  - action: action_confirm_brand_logo_color
+  - action: action_listen
+  - action: action_create_policy_document
+
+- rule: feedback
+  steps:
+  - intent: policy_observations
+  - action: action_handle_policy_feedback

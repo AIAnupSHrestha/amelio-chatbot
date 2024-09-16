@@ -237,7 +237,6 @@ nlu:
     - Asynchronous Collaboration
     - Rotating Meeting Times
     - Part-Time Core Periods
-    - Remote Work Options
     - Supportive Infrastructure
     - Transparent Communication
     - Full Engagement
@@ -275,7 +274,6 @@ nlu:
     - Guidelines for performance reviews
     - Support for employee wellbeing
     - Setting up time tracking systems
-    - Best practices for remote work
     - Evaluating flexible scheduling requests
     - Communication strategies for remote teams
     - Resources for managing core hours
@@ -341,6 +339,45 @@ nlu:
     - I saw a great concert last night.
     - I prefer tea over coffee.
     - I like to exercise in the morning.
+
+- intent: test_data
+  examples: |
+    - show
+    - i want see my logo
+    - i want see my color
+    - color
+    - show color
+    - show logo
+    - show brand color
+    - show brand logo
+
+- intent: brand_color
+  examples: |
+    - Red
+    - Green
+    - Blue
+    - Yellow
+    - Purple
+    - Orange
+    - Pink
+    - Brown
+    - Gray
+    - White
+    - Black
+    - Teal
+    - Cyan
+    - Magenta
+    - Beige
+    - Maroon
+    - Navy
+    - Olive
+    - Coral
+    - Salmon
+    - Lavender
+    - Turquoise
+    - Gold
+    - Silver
+    - Bronze
 
 
 - synonym: remote

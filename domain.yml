@@ -13,6 +13,8 @@ intents:
 - select_applied_context_option
 - select_eligibility_criteria_option
 - policy_observations
+- test_data
+- brand_color
 
 entities:
 - response
@@ -106,6 +108,16 @@ slots:
     influence_conversation: false
     mappings:
     - type: custom
+  logo_url:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: custom
+  brand_color:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: custom
 
 responses:
   utter_goodbye:
@@ -135,7 +147,9 @@ actions:
 - action_custom_policy_input
 - action_hr_policy_observations
 - action_handle_policy_feedback
-- action_logo_and_brand_color
+- action_logo
+- action_brand_color
+- action_confirm_brand_logo_color
 - action_create_policy_document
 - action_missing_policy
 

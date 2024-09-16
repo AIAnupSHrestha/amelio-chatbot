@@ -679,9 +679,11 @@ class actionCustomFallback(Action):
         action_map = {
             "flexible_work": "action_validate_flexible_work",
             "applied_context": "action_validate_applied_context_form",
-            "eligibility_criteria": "action_validate_eligibility_criteria"
+            "eligibility_criteria": "action_validate_eligibility_criteria",
+            "logo": "action_brand_color",
+            "color": "action_create_policy_document"
         }
-        print(f"follow up action - {action_map[indicator]}")
+        # print(f"follow up action - {action_map[indicator]}")
 
         return [FollowupAction(action_map[indicator])]
 
@@ -693,6 +695,8 @@ class actionCustomFallback(Action):
         #     return [FollowupAction("action_validate_eligibility_criteria")]
         # elif (indicator == "custom_policy"):
         #     return [FollowupAction("action_track_custom_policy_input")]
+
+#########################################################################################################################3
 
 custom_policy_prompt = """
 
@@ -752,16 +756,44 @@ class ActionMissingPolicy(Action):
 
 class ActionLogoBrandColor(Action):
     def name(self):
-        return "action_logo_and_brand_color"
+        return "action_logo" #and_brand_color"
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
-        dispatcher.utter_message(text="Company's Logo and Brand Color is recorded.")
-        return [FollowupAction("action_create_policy_document")]
+        dispatcher.utter_message(text="Please provide url of brand logo")
+        return [SlotSet("indicator", "logo")]
+    
+class ActionLogoBrandColor(Action):
+    def name(self):
+        return "action_brand_color"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        brand_logo = tracker.latest_message.get("text").lower()
+        # dispatcher.utter_message(image=brand_logo)
+        dispatcher.utter_message(text="Please provide color of brand")
+        return [SlotSet("indicator", "color"),
+                SlotSet("logo_url", brand_logo)]
+        # return [FollowupAction("action_create_policy_document")]
+    
+class ActionConfirmBrandLogoColor(Action):
+    def name(self):
+        return "action_confirm_brand_logo_color"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        brand_color = tracker.latest_message.get("text").upper()
+        brand_logo = tracker.get_slot("logo_url")
+        dispatcher.utter_message(image=brand_logo)
+        dispatcher.utter_message(f"Brand Color: {brand_color}")
+        return[FollowupAction("action_create_policy_document")]
+
     
 class ActionCreatePolicyDocument(Action):
     def name(self):
         return "action_create_policy_document"
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
-        dispatcher.utter_message(text="HR policy documnet created. Thank you for time!!")
-        return []
+        user_confirmation = tracker.latest_message.get("text").lower()
+        if user_confirmation == "yes":
+            dispatcher.utter_message(text="HR policy documnet created. Thank you for time!!")
+            return []
+        elif user_confirmation == "no":
+            return[FollowupAction("action_logo")]

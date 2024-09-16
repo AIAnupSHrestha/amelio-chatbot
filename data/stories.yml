@@ -250,4 +250,19 @@ stories:
   - action: action_custom_fallback
 
 
+- story: logo
+  steps:
+  - intent: test_data
+  - action: action_logo
 
+- story: color
+  steps:
+  - intent: brand_color
+  - action: action_confirm_brand_logo_color
+  - action: action_listen
+  - action: action_create_policy_document
+
+- story: user feedback
+  steps:
+  - intent: policy_observations
+  - action: action_handle_policy_feedback
