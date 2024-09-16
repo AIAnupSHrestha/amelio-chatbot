@@ -101,3 +101,24 @@ rules:
   steps:
   - intent: select_eligibility_criteria_option
   - action: action_eligibility_criteria
+
+- rule: continue flexible work
+  steps:
+  - action: action_set_question
+  - intent: outofScope
+  - action: action_custom_fallback
+  - action: action_validate_flexible_work
+
+- rule: continue applied context
+  steps:
+  - action: action_set_applied_context_question
+  - intent: outofScope
+  - action: action_custom_fallback
+  - action: action_validate_applied_context_form
+
+- rule: continue eligibility_criteria 1
+  steps:
+  - action: action_set_eligibility_criteria_question
+  - intent: outofScope
+  - action: action_custom_fallback
+  - action: action_validate_eligibility_criteria

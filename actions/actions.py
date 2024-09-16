@@ -287,32 +287,7 @@ class ActionSelectFlexibleWorkOption(Action):
 
 yes_no_prompt = """
     Is the following answer relevant to the question {current_question}: '{user_answer}'? Answer with 'yes' or 'no', without any additional explanation. .
-    """
-
-# class ValidateQuestionForm(FormValidationAction):
-#     def name(self):
-#         return "validate_question_form"
-    
-
-#     def validate_response(self, slot_value: Any, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
-#         current_question = tracker.get_slot("question0")
-#         user_answer = tracker.latest_message.get('text')
-#         index = int(tracker.get_slot("question_index"))
-
-
-#         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-#         answer_relevance = "yes" #prompt_engineering(prompt=prompt).lower()
-#         print(answer_relevance)
-        
-#         if answer_relevance == "yes" or "true":
-#             # return [SlotSet("question_index", index + 1), SlotSet("response", user_answer)]
-#             return {"user_response": user_answer, "response": None} #[FollowupAction("action_custom_fallback")]
-#         elif answer_relevance == "no" or "false":
-#             updated_index = index - 1
-#             dispatcher.utter_message(text="Please enter a answer relevant to the question.")
-#             return {"question_index": updated_index, "response": None}
-#             # return [SlotSet("question_index", index - 1), SlotSet("response", None)]
-    
+    """  
 
 
 class ValidateQuestionForm(FormValidationAction):
@@ -333,7 +308,11 @@ class ValidateQuestionForm(FormValidationAction):
             updated_response_list = user_answer
         
         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-        answer_relevance = prompt_engineering(prompt=prompt).lower()
+
+        try:
+            answer_relevance = prompt_engineering(prompt=prompt).lower()
+        except Exception as e:
+            print(f"Error occurred: {e}")
 
         print(answer_relevance)
 
@@ -369,19 +348,7 @@ class ActionSetQuestion(Action):
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         question_list = flexible_work_questions[0]
         # print(question_list)
-        # {
-        #                     "0": "How will the mandatory core period be enforced, and what tools or systems will be used to track employee hours?",
-        #                     "1": "What provisions will be made for employees in different time zones, and how will this impact the mandatory core period?",
-        #                     # "2": "How will the policy accommodate employees with varying personal responsibilities, such as childcare or eldercare?",
-        #                     # "3": "What are the expectations for employee availability during the mandatory core period, and how will this be communicated?",
-        #                     # "4": "How will the policy handle requests for exceptions or adjustments to the core hours due to unforeseen circumstances?",
-        #                     # "5": "What guidelines will be provided for team meetings, collaboration, and communication within the flexible hours framework?",
-        #                     # "6": "How will the policy ensure that flexible hours do not negatively impact productivity, team cohesion, or project deadlines?",
-        #                     # "7": "What measures will be taken to ensure that employees do not feel pressured to work outside their chosen hours or beyond the core period?",
-        #                     # "8": "What are the legal implications of implementing flexible hours, and how does the policy comply with local labor laws and regulations?",
-        #                     # "9": "How will performance be evaluated for employees working flexible hours, and what criteria will be used to ensure fairness?"
-        #                 }
-        # question_list = questions
+
         index = int(tracker.get_slot("question_index"))
         # print(index, question_list[index])
         # print(f"set question index - {index}")
@@ -399,16 +366,6 @@ class ActionSetQuestion(Action):
             return[SlotSet("question0", question_list[index])]
             # return [SlotSet("question0", question_list[question_index])]
     
-# class ActionActivateForm(Action):
-#     def name(self):
-#         return "action_form"
-    
-#     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-#         index = int(tracker.get_slot("question_index"))      
-#         return [SlotSet("question_index", index + 1), Form("question_form")]#,FollowupAction("action_custom_fallback")]
-#         # return [FollowupAction("action_custom_fallback")]
-
-
 ##########################################################################################################
 with open('actions/apply_flexible_work_policy_questions.json', 'r') as file:
     applied_questions = json.load(file)
@@ -437,9 +394,6 @@ You are an expert in drafting HR policies. I am currently working on creating a 
 The policy will include the following condition: {applied_context_option}. 
 Based on this specific clause, please provide 2 detailed questions to consider, separated by | only.
 """
-# You are an expert in drafting HR policies. I am currently working on creating an {job_type}. The policy will include the following condition: {flexible_work_option}.
-# Based on this specific clause, please provide a list of detailed questions to consider:
-# Output should be a list of length 5: [Question 1, Question 2, Question 3, Question 4, Question 5]
 
 applied_content_questions = []
 
@@ -489,34 +443,16 @@ class ActionAppliedContextSetQuestion(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         question_list = applied_content_questions[0]
-        # {
-        #                     "0": "What are the key goals or objectives you hope to achieve during the six-month pilot period?",
-        #                     "1": "What criteria will be used to evaluate the success or failure of the pilot project?" #,
-        #                     # "2": "What potential challenges or concerns do you anticipate facing during the pilot, and how do you plan to address them?",
-        #                 }
-        # question_list = questions
+
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
         # print(tracker.get_slot("applied_context_response"))
         if index >= len(question_list):
-            # return [FollowupAction("action_store_response")]
             return [FollowupAction("action_select_eligibility_criteria"),
                     SlotSet("question_index", 0)]
-                    # SlotSet("applied_context_option"), None]
         else:
             dispatcher.utter_message(text=question_list[index])
             return[SlotSet("question0", question_list[index])]
-            # return [SlotSet("question0", question_list[question_index]),
-            #         SlotSet("response_applied_context", None),
-            #         FollowupAction("action_applied_context_form")]
-  
-# class ActionActivateAppliedContextForm(Action):
-#     def name(self):
-#         return "action_applied_context_form"
-    
-#     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-#         index = int(tracker.get_slot("question_index"))      
-#         return [SlotSet("question_index", index + 1), Form("applied_context_form")]
     
 class ValidateAppliedContext(Action):
     def name(self):
@@ -534,7 +470,11 @@ class ValidateAppliedContext(Action):
             updated_response_list = user_answer
         
         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-        answer_relevance = prompt_engineering(prompt=prompt).lower()
+        try:
+            answer_relevance = prompt_engineering(prompt=prompt).lower()
+        except Exception as e:
+            print(f"Error occurred: {e}")
+
 
         if answer_relevance == "yes.":
             updated_index = index + 1
@@ -547,17 +487,6 @@ class ValidateAppliedContext(Action):
             dispatcher.utter_message(text="Please enter answer relevant to the question.")
             return[FollowupAction("action_set_applied_context_question")]
             # return {"question_index": updated_index}
-    
-    # def submit(self):
-    #     return [FollowupAction("action_set_applied_context_question")]
-# class Continue(Action):
-#     def name(self) -> Text:
-#         return "action_continue"
-    
-#     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-#         response = tracker.get_slot("response_applied_context")
-#         if response:
-#             return[FollowupAction("action_set_applied_context_question")]
     
 ####################################################################################################################
 with open('actions/eligibility_criteria.json', 'r') as file:
@@ -585,9 +514,6 @@ You are an expert in drafting HR policies. I am currently working on creating a 
 The policy will include the following condition: {eligibility_criteria_option}. 
 Based on this specific clause, please provide 2 detailed questions to consider, separated by | only.
 """
-# You are an expert in drafting HR policies. I am currently working on creating an {job_type}. The policy will include the following condition: {flexible_work_option}.
-# Based on this specific clause, please provide a list of detailed questions to consider:
-# Output should be a list of length 5: [Question 1, Question 2, Question 3, Question 4, Question 5]
 
 eligibility_criteria_question = []
 
@@ -635,36 +561,18 @@ class ActionEligibilityCriteriaQuestion(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         question_list = eligibility_criteria_question[0]
-        # {
-        #                     "0": "What specific job roles or functions do you consider as requiring constant physical presence and thus would not be eligible for flexible work arrangements?",
-        #                     "1": "Are there any conditions under which roles typically requiring constant physical presence might still be considered for flexible work options?" #,
-        #                     # "2": "How will you determine and communicate which full-time and part-time positions are eligible for flexible work arrangements?"
-        #                 }
-        # question_list = questions
         index = int(tracker.get_slot("question_index"))
+
         print(f"set question index - {index}")
-        question_index = str(index)
         print(tracker.get_slot("eligibility_criteria_response"))
+
         if index >= len(question_list):
             dispatcher.utter_message(text="Completed..!!")
             return [ FollowupAction("action_store_response"),
                     SlotSet("question_index", 0)]
-            # return [FollowupAction(""),
-            #         SlotSet("question_index", 0)]
         else:
             dispatcher.utter_message(text=question_list[index])
             return[SlotSet("question0", question_list[index])]
-            # return [SlotSet("question0", question_list[question_index]),
-            #         SlotSet("response", None)]#,
-                    #FollowupAction("action_validate_eligibility_criteria")]
-  
-# class ActionActivateEligibilityCriteriaForm(Action):
-#     def name(self):
-#         return "action_eligibility_criteria_form"
-    
-#     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-#         index = int(tracker.get_slot("question_index"))      
-#         return [SlotSet("question_index", index + 1), Form("eligibility_criteria_form")]
     
 class ActionValidateQuestionForm(FormValidationAction):
     def name(self):
@@ -683,7 +591,12 @@ class ActionValidateQuestionForm(FormValidationAction):
             updated_response_list = user_answer
         
         prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
-        answer_relevance = prompt_engineering(prompt=prompt).lower()
+        
+        try:
+            answer_relevance = prompt_engineering(prompt=prompt).lower()
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            
         print(answer_relevance)
 
         if answer_relevance == "yes.":
@@ -734,7 +647,7 @@ class ActionStoreResponse(Action):
             pdf.multi_cell(200, 10, txt= "Ans: " + applied_context_response[num], align='L')
 
         pdf.ln(10)
-        
+
         # eligibility criteria
         pdf.set_font("Arial", style='B', size=14)
         pdf.cell(200, 10, txt="3. Eligibility criteria", ln=True, align='L')
@@ -762,14 +675,24 @@ class actionCustomFallback(Action):
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
         indicator = tracker.get_slot("indicator")
         print(indicator)
-        if (indicator == "flexible_work"):
-            return [FollowupAction("action_validate_flexible_work")]
-        elif (indicator == "applied_context"):
-            return [FollowupAction("action_validate_applied_context_form")]
-        elif (indicator == "eligibility_criteria"):
-            return [FollowupAction("action_validate_eligibility_criteria")]
-        elif (indicator == "custom_policy"):
-            return [FollowupAction("action_track_custom_policy_input")]
+
+        action_map = {
+            "flexible_work": "action_validate_flexible_work",
+            "applied_context": "action_validate_applied_context_form",
+            "eligibility_criteria": "action_validate_eligibility_criteria"
+        }
+        print(f"follow up action - {action_map[indicator]}")
+
+        return [FollowupAction(action_map[indicator])]
+
+        # if (indicator == "flexible_work"):
+        #     return [FollowupAction("action_validate_flexible_work")]
+        # elif (indicator == "applied_context"):
+        #     return [FollowupAction("action_validate_applied_context_form")]
+        # elif (indicator == "eligibility_criteria"):
+        #     return [FollowupAction("action_validate_eligibility_criteria")]
+        # elif (indicator == "custom_policy"):
+        #     return [FollowupAction("action_track_custom_policy_input")]
 
 custom_policy_prompt = """
 

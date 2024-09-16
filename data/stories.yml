@@ -208,33 +208,36 @@ stories:
 # #   - active_loop: applied_context_form
 # #   - action: action_set_applied_context_question
 
-# - story: continue flexible work 1
-#   steps:
-#   - action: action_set_question
-#   - intent: action_custom_fallback
-#   - action: action_validate_applied_context_form
+- story: continue flexible work
+  steps:
+  - action: action_set_question
+  - intent: outofScope
+  - action: action_custom_fallback
+  - action: action_validate_flexible_work
 
 # - story: continue flexible work 2
 #   steps:
 #   - intent: action_custom_fallback
 #   - action: action_validate_applied_context_form
 
-# - story: continue applied context 1
-#   steps:
-#   - action: action_set_applied_context_question
-#   - intent: action_custom_fallback
-#   - action: action_validate_applied_context_form
+- story: continue applied context
+  steps:
+  - action: action_set_applied_context_question
+  - intent: outofScope
+  - action: action_custom_fallback
+  - action: action_validate_applied_context_form
 
 # - story: continue applied context 2
 #   steps:
 #   - intent: action_custom_fallback
 #   - action: action_validate_applied_context_form
 
-# - story: continue eligibility_criteria 1
-#   steps:
-#   - action: action_set_eligibility_criteria_question
-#   - intent: action_custom_fallback
-#   - action: action_validate_eligibility_criteria
+- story: continue eligibility_criteria 1
+  steps:
+  - action: action_set_eligibility_criteria_question
+  - intent: outofScope
+  - action: action_custom_fallback
+  - action: action_validate_eligibility_criteria
 
 # - story: continue eligibility_criteria 2
 #   steps:
@@ -245,4 +248,6 @@ stories:
   steps: 
   - intent: outofScope
   - action: action_custom_fallback
+
+
 
