@@ -134,14 +134,14 @@ rules:
 - rule: logo
   steps:
   - intent: test_data
-  - action: action_logo
+  - action: action_create_policy_document
 
 - rule: color
   steps:
   - intent: brand_color
+  # - action: action_confirm_brand_logo_color
+  # - action: action_listen
   - action: action_confirm_brand_logo_color
-  - action: action_listen
-  - action: action_create_policy_document
 
 - rule: feedback
   steps:

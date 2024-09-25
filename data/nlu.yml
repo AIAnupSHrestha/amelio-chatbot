@@ -351,33 +351,62 @@ nlu:
     - show brand color
     - show brand logo
 
+# - intent: brand_logo
+#   examples: |
+#     - [photo.jpg](file)
+#     - [image.png](file)
+#     - [sample_image.jpg](file)
+#     - [my_local_image.jpg](file)
+#     - [file.jpg](file)?
+#     - [diagram.png](file)
+#     - [C:/Users/John/Pictures/photo.jpg](file)
+#     - [D:/Images/sample_image.png](file)
+#     - [C:/Downloads/picture1.jpg](file)
+#     - [C:/Documents/Photos/holiday.jpg](file)
+#     - [C:/Users/MyUser/Desktop/image.png](file)
+#     - [E:/Work/Project/images/diagram.png](file)
+#     - [D:/Projects/assets/image01.jpg](file)
+#     - [C:/Images/house.png](file)
+#     - [C:/MyFiles/pic.png](file)
+#     - [C:/Users/JohnDoe/Pictures/car.jpg](file)
+#     - [C:/Users/Public/Documents/image2.jpg](file)
+#     - [C:/Users/Me/Pictures/myphoto.jpg](file)
+#     - [C:/Work/Images/chart.png](file)
+#     - [D:/Media/photos/sample.jpg](file)
+#     - [C:/Downloads/new_image.png](file)
+#     - 
+#     - 
+#     - 
+#     - 
+#     - 
+
 - intent: brand_color
   examples: |
-    - Red
-    - Green
-    - Blue
-    - Yellow
-    - Purple
-    - Orange
-    - Pink
-    - Brown
-    - Gray
-    - White
-    - Black
-    - Teal
-    - Cyan
-    - Magenta
-    - Beige
-    - Maroon
-    - Navy
-    - Olive
-    - Coral
-    - Salmon
-    - Lavender
-    - Turquoise
-    - Gold
-    - Silver
-    - Bronze
+    - #FF0000
+    - #008000
+    - #0000FF
+    - #FFFF00
+    - #800080
+    - #FFA500
+    - #FFB6C1
+    - #A52A2A
+    - #808080
+    - #FFFFFF
+    - #000000
+    - #008080
+    - #00FFFF
+    - #FF00FF
+    - #F5DEB3
+    - #800000
+    - #000080
+    - #808000
+    - #FF7F50
+    - #FA8072
+    - #E0FFFF
+    - #40E0D0
+    - #FFD700
+    - #C0C0C0
+    - #B8860B
 
 
 - synonym: remote

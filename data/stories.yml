@@ -22,7 +22,7 @@ stories:
   - intent: select_option
     entities:
     - option: "selected_hr_policy"
-  - action: action_hr_policy
+  - action: action_company_name
   - intent: hr_policy
   - slot_was_set: 
     - hr_policy_type: remote
@@ -80,7 +80,7 @@ stories:
     - option: selected_hr_policy
   - slot_was_set:
     - option: selected_hr_policy
-  - action: action_hr_policy
+  - action: action_company_name
   - intent: hr_policy
     entities:
     - hr_policy_type: remote
@@ -253,14 +253,14 @@ stories:
 - story: logo
   steps:
   - intent: test_data
-  - action: action_logo
+  - action: action_create_policy_document
 
 - story: color
   steps:
   - intent: brand_color
+  # - action: action_confirm_brand_logo_color
+  # - action: action_listen
   - action: action_confirm_brand_logo_color
-  - action: action_listen
-  - action: action_create_policy_document
 
 - story: user feedback
   steps:

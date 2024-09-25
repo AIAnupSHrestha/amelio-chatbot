@@ -25,6 +25,13 @@ from dotenv import load_dotenv
 
 # import re
 from fpdf import FPDF
+import PyPDF2
+
+from docx import Document
+from docx.shared import Pt, Inches, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 
 import ollama
 from reportlab.pdfgen import canvas 
@@ -40,6 +47,7 @@ import cohere
 # from mysql.connector import errorcode
 
 load_dotenv()
+
 OPENAI_KEY = "12345678765432" #os.getenv("OPENAI_API_KEY")
 client = OpenAI(
   api_key=OPENAI_KEY
@@ -49,7 +57,6 @@ COHERE_KEY = os.getenv("COHERE_API_KEY")
 
 co = cohere.Client(api_key=COHERE_KEY)
 
-def prompt_engineering(prompt):
     # response = client.chat.completions.create(
     #     model="gpt-3.5-turbo-0125",
     #     messages=[
@@ -57,6 +64,7 @@ def prompt_engineering(prompt):
     #     ],
     # )
     # return response.choices[0].message.content
+def prompt_engineering(prompt):
     response = co.chat(
         message=prompt,
         model="command-r-plus-08-2024",
@@ -93,7 +101,8 @@ def prompt_engineering(prompt):
 PROMPT_TEMPLATE = """
 You are an expert in drafting HR policies. I am currently working on creating a {job_type}. 
 The policy will include the following condition: {flexible_work_option}. 
-Based on this specific clause, please provide 2 detailed questions to consider, separated by | only.
+Based on this specific clause, please provide 3 detailed questions to consider, separated by pipe character (|) only.
+And avoid generating tail and compound questions in any circumtances.
 """
 
 with open('actions/predefined_questions.json', 'r') as file:
@@ -130,7 +139,27 @@ class ActionGreet(Action):
         reply = random.choice(messages)
         dispatcher.utter_message(text=reply, buttons=buttons)
         return []
-
+    
+class ActionCompanyName(Action):
+    def name(self) -> Text:
+        return "action_company_name"
+    
+    def run(self, dispatcher: CollectingDispatcher,
+                tracker: Tracker,
+                domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        dispatcher.utter_message(text="You have selected HR policy. \nWhat is the name of your company?")
+        return[SlotSet("indicator", "company_name")]
+    
+class ActionSetCompanyName(Action):
+    def name(self) -> Text:
+        return "action_set_company_name"
+    
+    def run(self, dispatcher: CollectingDispatcher,
+                tracker: Tracker,
+                domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        company_name = tracker.latest_message.get("text")
+        return[SlotSet("company_name", company_name),
+               FollowupAction("action_hr_policy")]
 
 
 class ActionHrPolicy(Action):
@@ -183,7 +212,7 @@ class ActionHrPolicy(Action):
                 )
                 dispatcher.utter_message(text=message, buttons=buttons)
             else:
-                message = "You have selected HR policy. \nWhat policy would you like to create?"
+                message = "What policy would you like to create?"
                 dispatcher.utter_message(text=message,)
     
             return []
@@ -204,8 +233,10 @@ class ActionPolicyType(Action):
             # cursor.execute(query)
             # result = cursor.fetchmany()
             # selected_policy = get_policy_from_db('hr_policy_type', 'policy_name', selected_policy)
-            selected_policy = 'flexible'
-            if selected_policy.lower() == 'flexible':
+
+            # selected_policy = 'flexible'
+
+            if selected_policy.lower(): # == 'flexible':
                 options = predefined_questions[selected_policy]
                 buttons = []
                 for key, option_val in options.items():
@@ -347,7 +378,7 @@ class ActionSetQuestion(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         question_list = flexible_work_questions[0]
-        # print(question_list)
+        print(question_list)
 
         index = int(tracker.get_slot("question_index"))
         # print(index, question_list[index])
@@ -392,7 +423,8 @@ class ActionSelectAppliedContexts(Action):
 APPLIED_CONTEXT_PROMPT_TEMPLATE ="""
 You are an expert in drafting HR policies. I am currently working on creating a {job_type}. 
 The policy will include the following condition: {applied_context_option}. 
-Based on this specific clause, please provide 2 detailed questions to consider, separated by | only.
+Based on this specific clause, please provide 2 detailed questions to consider, separated by pipe character (|) only.
+And avoid generating tail and compound questions in any circumtances.
 """
 
 applied_content_questions = []
@@ -443,6 +475,7 @@ class ActionAppliedContextSetQuestion(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         question_list = applied_content_questions[0]
+        print(question_list)
 
         index = int(tracker.get_slot("question_index"))
         print(f"set question index - {index}")
@@ -512,7 +545,8 @@ class ActionSelectEligibilityCriteria(Action):
 ELIGIBILITY_CRITERIA_PROMPT_TEMPLATE = """ 
 You are an expert in drafting HR policies. I am currently working on creating a {job_type}. 
 The policy will include the following condition: {eligibility_criteria_option}. 
-Based on this specific clause, please provide 2 detailed questions to consider, separated by | only.
+Based on this specific clause, please provide 2 detailed questions to consider, separated by pipe character (|) only.
+And avoid generating tail or compound questions in any circumtances
 """
 
 eligibility_criteria_question = []
@@ -561,6 +595,8 @@ class ActionEligibilityCriteriaQuestion(Action):
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         question_list = eligibility_criteria_question[0]
+        print(question_list)
+
         index = int(tracker.get_slot("question_index"))
 
         print(f"set question index - {index}")
@@ -610,9 +646,6 @@ class ActionValidateQuestionForm(FormValidationAction):
             dispatcher.utter_message(text="Please enter answer relevant to the question.")
             # return {"question_index": updated_index}
             return[FollowupAction("action_set_eligibility_criteria_question")]
-    
-    def submit(self, dispatcher, tracker, domain) -> List[Dict]:
-        return [FollowupAction("action_set_eligibility_criteria_question")]
     
 ##################################################################################################################
 
@@ -666,7 +699,7 @@ class ActionStoreResponse(Action):
         self.save_pdf(flexible_response, applied_context_response, eligibility_criteria_response)
 
         dispatcher.utter_message(text="Saved in 'Policy_Questions_and_Responses.pdf' file!!!")
-        return [] #[FollowupAction("action_select_applied_context")]
+        return [FollowupAction("action_hr_policy_observations")] #[FollowupAction("action_select_applied_context")]
     
 class actionCustomFallback(Action):
     def name(self):
@@ -680,8 +713,9 @@ class actionCustomFallback(Action):
             "flexible_work": "action_validate_flexible_work",
             "applied_context": "action_validate_applied_context_form",
             "eligibility_criteria": "action_validate_eligibility_criteria",
+            "company_name": "action_set_company_name",
             "logo": "action_brand_color",
-            "color": "action_create_policy_document"
+            "missing_element": "action_validate_missing_element_question"
         }
         # print(f"follow up action - {action_map[indicator]}")
 
@@ -723,15 +757,141 @@ class ActionGenerateCustomPolicyClause(Action):
             return [SlotSet("custom_policy_input", custom_policy),
                     FollowupAction("action_hr_policy_observations")]
     
+ai_observation_prompt_template = """
+This is a remote work HR policy, are we missing something in this HR policy?
+Identify the missing elements in the following remote work HR policy:
 
+{policy}
+
+If there are any missing element in the provided policy, Return the missing elements separated by commas.
+"""
+
+missing_element_prompt = """
+"Generate questions that address the following missing elements in a Remote Work HR policy: {missing_elements}
+Avoid compound and tail questions under any circumstances. 
+Do not provide any additional information beyond the questions"
+
+Separator: |
+"""
+
+
+missing_elements = []
 
 class ActionHRPolicyObservation(Action):
     def name(self):
         return "action_hr_policy_observations"
     
+    def extract_text_from_pdf(self, pdf_file_path):
+        try:
+            with open(pdf_file_path, 'rb') as pdf_file:
+                pdf_reader = PyPDF2.PdfReader(pdf_file)
+                text = ''
+                for page_num in range(len(pdf_reader.pages)):
+                    page = pdf_reader.pages[page_num]
+                    text += page.extract_text()
+                return text
+        except Exception as e:
+            print(f"Error extracting text from PDF: {e}")
+            return None
+    
+    def list_policy_elements(policy_string):
+        policy_string = policy_string.replace(", and", ",")
+        elements_list = [element.strip() for element in policy_string.split(',') if element.strip()]
+        return elements_list
+
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
-        dispatcher.utter_message(text="This is a remote work HR policy, are we missing something in this policy? (Yes/No)")
-        return []
+        pdf_file_path = "Policy_Questions_and_Responses.pdf"
+        extracted_text = self.extract_text_from_pdf(pdf_file_path)
+
+        prompt = ai_observation_prompt_template.format(policy = extracted_text)
+        missing_element = prompt_engineering(prompt=prompt)
+        ele = missing_element.replace(", and", ",")
+        elements_list = [element.strip() for element in ele.split(',') if element.strip()]
+        missing_elements.append(elements_list)
+        dispatcher.utter_message(text=f"Missing element in your policy are:\n{missing_element}")
+        return [FollowupAction("action_handle_missing_element")]
+    
+missing_element_questions = []
+
+class ActionHandleMissingElement(Action):
+    def name(self):
+        return "action_handle_missing_element"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        elements = missing_elements[0]
+        prompt = missing_element_prompt.format(missing_elements=elements)
+        questions_list = prompt_engineering(prompt=prompt).replace("\n", "").replace("- ", "")
+
+        questions = [question.strip() for question in questions_list.split('|')]
+        print(questions)
+        # for num in range(len(questions)):
+        #     # if (num != 0) or (num % 3 != 0): # because of missing element response only 
+        #             missing_element_questions.append(questions[num])
+        missing_element_questions.append(questions)
+        dispatcher.utter_message(text="\nPlease answer the following question to fill up the missing gap in your HR policy...\n")
+        return [SlotSet("indicator", "missing_element"),
+                FollowupAction("action_ask_question_missing_element")]
+    
+class ActionAskQMiuestoinssingElement(Action):
+    def name(self):
+        return "action_ask_question_missing_element"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        question_list = missing_element_questions[0]
+        print(question_list)
+        # if (num != 0) or (num % 3 != 0):
+        index = int(tracker.get_slot("question_index"))
+        # if (index == 0) or (index % 3 == 0):
+        #     index = index+1
+        print(f"set question index - {index}")
+        print(tracker.get_slot("missing_element_response"))
+
+        if index >= len(question_list):         
+            # dispatcher.utter_message(text="Completed..!!")
+            return [ FollowupAction("action_logo"),
+                    SlotSet("question_index", 0)]
+        else:
+            dispatcher.utter_message(text=question_list[index])
+            return[SlotSet("question0", question_list[index])]
+    
+class ActionValidateMissingElementQuestion(Action):
+    def name(self):
+        return "action_validate_missing_element_question"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        current_question = tracker.get_slot("question0")
+        user_answer = tracker.latest_message.get('text')
+        index = int(tracker.get_slot("question_index"))
+        response_list = tracker.get_slot("missing_element_response")
+        # print(response_list, "Q:" + current_question, "Ans" + user_answer)
+
+        if response_list:
+            updated_response_list = response_list + [user_answer]
+        else:
+            updated_response_list = user_answer
+        
+        prompt = yes_no_prompt.format(current_question=current_question, user_answer=user_answer)
+        
+        try:
+            answer_relevance = prompt_engineering(prompt=prompt).lower()
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            
+        print(answer_relevance)
+
+        if answer_relevance == "yes.":
+            updated_index = index + 1
+            # print(updated_response_list)
+            return[SlotSet("question_index", updated_index),
+                   SlotSet("missing_element_response", updated_response_list),
+                   FollowupAction("action_ask_question_missing_element")]
+            # return {"eligibility_criteria_response": updated_response_list}
+        elif answer_relevance == "no.":
+            dispatcher.utter_message(text="Please enter answer relevant to the question.")
+            # return {"question_index": updated_index}
+            return[FollowupAction("action_ask_question_missing_element")]
+
+        return[FollowupAction("action_ask_question_missing_element")]
     
 class ActionHRPolicyObservation(Action):
     def name(self):
@@ -767,11 +927,13 @@ class ActionLogoBrandColor(Action):
         return "action_brand_color"
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
-        brand_logo = tracker.latest_message.get("text").lower()
+        brand_logo = tracker.latest_message.get("text")#.lower()
         # dispatcher.utter_message(image=brand_logo)
         dispatcher.utter_message(text="Please provide color of brand")
+
         return [SlotSet("indicator", "color"),
                 SlotSet("logo_url", brand_logo)]
+    
         # return [FollowupAction("action_create_policy_document")]
     
 class ActionConfirmBrandLogoColor(Action):
@@ -779,21 +941,141 @@ class ActionConfirmBrandLogoColor(Action):
         return "action_confirm_brand_logo_color"
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
-        brand_color = tracker.latest_message.get("text").upper()
-        brand_logo = tracker.get_slot("logo_url")
-        dispatcher.utter_message(image=brand_logo)
+        brand_color = tracker.latest_message.get("text")
+        # brand_logo = tracker.get_slot("logo_url")
+        # dispatcher.utter_message(image=brand_logo)
         dispatcher.utter_message(f"Brand Color: {brand_color}")
-        return[FollowupAction("action_create_policy_document")]
+        return[SlotSet("brand_color", brand_color),
+               FollowupAction("action_create_policy_document")]
 
     
 class ActionCreatePolicyDocument(Action):
     def name(self):
         return "action_create_policy_document"
     
+    
+    def createDocument(company_name, brand_color, brand_logo, flexible_response, applied_response, eligibility_response, missing_response):
+        flexible_question = flexible_work_questions[0]
+        applied_question = applied_content_questions[0]
+        eligibility_question = eligibility_criteria_question[0]
+        missing_question = missing_element_questions[0]
+
+        doc = Document()
+
+        table = doc.add_table(rows=1, cols=1)
+        table.autofit = False
+        table.columns[0].width = Inches(10)
+        cell = table.cell(0, 0)
+
+        # Fill the cell with color
+        # Use RGBColor for color specification
+        cell._element.get_or_add_tcPr().append(
+            OxmlElement('w:shd', {
+                qn('w:fill'): brand_color
+            })
+        )
+
+        
+
+        # table = doc.add_table(rows=1, cols=2)
+
+        # cell_logo = table.cell(0, 0)
+        # paragraph_logo = cell_logo.add_paragraph()
+        # run_logo = paragraph_logo.add_run()
+        # run_logo.add_picture('pexels-helloaesthe-28056131.jpg', width=Inches(0.5), height=Inches(0.5))
+
+        # cell_text = table.cell(0, 1)
+        # paragraph_text = cell_text.add_paragraph()
+        # run_text = paragraph_text.add_run(company_name)
+        # run_text.font.name = 'Times New Roman'
+        # run_text.font.size = Pt(14)
+        # run_text.bold = True
+        doc.add_paragraph("\n")
+        doc.add_picture(brand_logo, width=Inches(0.5), height=Inches(0.5))
+        doc.add_paragraph(company_name)
+
+        # Add a title
+        title = doc.add_heading('HR Policy', level=1)
+        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = title.runs[0]
+        run.font.color.rgb = RGBColor(0,0,0)
+        
+        policy = doc.add_heading('Policy Question Answers', level=2)
+        policy.add_run("\n")
+        run = policy.runs[0]
+        run.font.color.rgb = RGBColor(0,0,0)
+        run.font.name = 'Times New Roman' 
+        run.font.size = Pt(14)
+        policy.add_run("\n")
+
+        flexiblePolicy = doc.add_paragraph()
+        run = flexiblePolicy.add_run("Flexible work policy")
+        run.bold = True
+        flexiblePolicy.add_run("\n")
+        for num in range(len(flexible_question)):
+            run = flexiblePolicy.add_run(flexible_question[num])
+            flexiblePolicy.add_run("\n")
+            run = flexiblePolicy.add_run(f"Ans: {flexible_response[num]}")
+            flexiblePolicy.add_run("\n")
+
+        for run in flexiblePolicy.runs:
+            run.font.name = 'Times New Roman'
+            run.font.size = Pt(12)
+
+        appliedContext = doc.add_paragraph()
+        run = appliedContext.add_run("Applied Context")
+        run.bold = True
+        appliedContext.add_run("\n")
+        for num in range(len(applied_question)):
+            run = appliedContext.add_run(applied_question[num])
+            appliedContext.add_run("\n")
+            run = appliedContext.add_run(f"Ans: {applied_response[num]}")
+            appliedContext.add_run("\n")
+
+        for run in appliedContext.runs:
+            run.font.name = 'Times New Roman'
+            run.font.size = Pt(12)
+
+        eligibilityCriteria = doc.add_paragraph()
+        run = eligibilityCriteria.add_run("Eligibility Criteria")
+        run.bold = True
+        eligibilityCriteria.add_run("\n")
+        for num in range(len(eligibility_question)):
+            run = eligibilityCriteria.add_run(eligibility_question[num])
+            eligibilityCriteria.add_run("\n")
+            run = eligibilityCriteria.add_run(f"Ans: {eligibility_response[num]}")
+            eligibilityCriteria.add_run("\n")
+
+        for run in eligibilityCriteria.runs:
+            run.font.name = 'Times New Roman'
+            run.font.size = Pt(12)
+
+        missingElement = doc.add_paragraph()
+        run = missingElement.add_run("Missing Element")
+        run.bold = True
+        missingElement.add_run("\n")
+        for num in range(len(missing_question)):
+            run = missingElement.add_run(missing_question[num])
+            missingElement.add_run("\n")
+            run = missingElement.add_run(f"Ans: {missing_response[num]}")
+            missingElement.add_run("\n")
+
+        for run in missingElement.runs:
+            run.font.name = 'Times New Roman'
+            run.font.size = Pt(12)
+
+        # Save the document
+        doc.save(f'{company_name}_HR_document.docx')
+        return "Document Created..."
+
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
-        user_confirmation = tracker.latest_message.get("text").lower()
-        if user_confirmation == "yes":
-            dispatcher.utter_message(text="HR policy documnet created. Thank you for time!!")
-            return []
-        elif user_confirmation == "no":
-            return[FollowupAction("action_logo")]
+        company_name = tracker.get_slot("company_name")
+        brand_color = tracker.get_slot("brand_color")
+        brand_logo = tracker
+        flexible_response = tracker.get_slot("user_response")
+        applied_context_response = tracker.get_slot("applied_context_response")
+        eligibility_criteria_response = tracker.get_slot("eligibility_criteria_response")
+        missing_response = tracker.get_slot("missing_element_response")
+        self.createDocument(company_name, brand_color,brand_logo, flexible_response, applied_context_response, eligibility_criteria_response, missing_response)
+        dispatcher.utter_message(text="HR policy documnet created. Thank you for time!!")
+        return[]
