@@ -954,7 +954,7 @@ class ActionCreatePolicyDocument(Action):
         return "action_create_policy_document"
     
     
-    def createDocument(company_name, brand_color, brand_logo, flexible_response, applied_response, eligibility_response, missing_response):
+    def createDocument(self, company_name, brand_color, brand_logo, flexible_response, applied_response, eligibility_response, missing_response):
         flexible_question = flexible_work_questions[0]
         applied_question = applied_content_questions[0]
         eligibility_question = eligibility_criteria_question[0]
@@ -1071,7 +1071,7 @@ class ActionCreatePolicyDocument(Action):
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
         company_name = tracker.get_slot("company_name")
         brand_color = tracker.get_slot("brand_color")
-        brand_logo = tracker
+        brand_logo = tracker.get_slot("logo_url")
         flexible_response = tracker.get_slot("user_response")
         applied_context_response = tracker.get_slot("applied_context_response")
         eligibility_criteria_response = tracker.get_slot("eligibility_criteria_response")
