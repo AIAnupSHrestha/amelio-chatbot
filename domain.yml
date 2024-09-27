@@ -118,13 +118,13 @@ slots:
     influence_conversation: false
     mappings:
     - type: custom
-  missing_element_response:
-    type: list
+  company_name:
+    type: text
     influence_conversation: false
     mappings:
     - type: custom
-  company_name:
-    type: text
+  missing_element_response:
+    type: list
     influence_conversation: false
     mappings:
     - type: custom
@@ -148,12 +148,13 @@ actions:
 - action_applied_content
 - action_eligibility_criteria
 - action_form
+- action_company_name
+- action_set_company_name
 - action_generate_custom_policy_clause
 - action_track_custom_policy_input
 - action_validate_flexible_work
 - action_validate_applied_context_form
 - action_validate_eligibility_criteria
-- action_validate_missing_element_question
 - action_store_response
 - action_custom_policy_input
 - action_hr_policy_observations
@@ -161,12 +162,11 @@ actions:
 - action_logo
 - action_brand_color
 - action_confirm_brand_logo_color
-- action_ask_question_missing_element
 - action_create_policy_document
 - action_missing_policy
 - action_handle_missing_element
-- action_company_name
-- action_set_company_name
+- action_ask_question_missing_element
+- action_validate_missing_element_question
 
 session_config:
   session_expiration_time: 60

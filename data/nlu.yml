@@ -339,6 +339,18 @@ nlu:
     - I saw a great concert last night.
     - I prefer tea over coffee.
     - I like to exercise in the morning.
+    - logo.jpg
+    - image.jpg
+    - company_logo.png
+    - logo.jpg
+    - company_logo.jpeg
+    - brand_logo.png
+    - new_logo.jpeg
+    - banner.png
+    - corporate_logo.png
+    - logo_design.png
+    - logo_v2.png
+    - company_logo_v3.jpeg
 
 - intent: test_data
   examples: |
@@ -350,35 +362,6 @@ nlu:
     - show logo
     - show brand color
     - show brand logo
-
-# - intent: brand_logo
-#   examples: |
-#     - [photo.jpg](file)
-#     - [image.png](file)
-#     - [sample_image.jpg](file)
-#     - [my_local_image.jpg](file)
-#     - [file.jpg](file)?
-#     - [diagram.png](file)
-#     - [C:/Users/John/Pictures/photo.jpg](file)
-#     - [D:/Images/sample_image.png](file)
-#     - [C:/Downloads/picture1.jpg](file)
-#     - [C:/Documents/Photos/holiday.jpg](file)
-#     - [C:/Users/MyUser/Desktop/image.png](file)
-#     - [E:/Work/Project/images/diagram.png](file)
-#     - [D:/Projects/assets/image01.jpg](file)
-#     - [C:/Images/house.png](file)
-#     - [C:/MyFiles/pic.png](file)
-#     - [C:/Users/JohnDoe/Pictures/car.jpg](file)
-#     - [C:/Users/Public/Documents/image2.jpg](file)
-#     - [C:/Users/Me/Pictures/myphoto.jpg](file)
-#     - [C:/Work/Images/chart.png](file)
-#     - [D:/Media/photos/sample.jpg](file)
-#     - [C:/Downloads/new_image.png](file)
-#     - 
-#     - 
-#     - 
-#     - 
-#     - 
 
 - intent: brand_color
   examples: |

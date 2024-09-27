@@ -44,6 +44,7 @@ stories:
 
 - story: select applied context
   steps:
+  - action: action_select_applied_context
   - intent: select_applied_context_option
     entities:
     - applied_context_option: "a"
@@ -59,7 +60,6 @@ stories:
   - slot_was_set:
     - eligibility_criteria_option: "a"
   - action: action_eligibility_criteria
-
 
 
 - story: select flexible work option
@@ -234,15 +234,19 @@ stories:
 
 - story: continue eligibility_criteria 1
   steps:
+  - intent: select_eligibility_criteria_option
+    entities:
+    - eligibility_criteria_option: a
+  - slot_was_set:
+    - eligibility_criteria_option: a
+  - action: action_eligibility_criteria
+
+- story: continue eligibility_criteria 2
+  steps:
   - action: action_set_eligibility_criteria_question
   - intent: outofScope
   - action: action_custom_fallback
   - action: action_validate_eligibility_criteria
-
-# - story: continue eligibility_criteria 2
-#   steps:
-#   - intent: action_custom_fallback
-#   - action: action_validate_eligibility_criteria
 
 - story: Out-Of-Scope
   steps: 
@@ -253,16 +257,16 @@ stories:
 - story: logo
   steps:
   - intent: test_data
-  - action: action_create_policy_document
+  - action: action_logo
 
 - story: color
   steps:
   - intent: brand_color
-  # - action: action_confirm_brand_logo_color
-  # - action: action_listen
   - action: action_confirm_brand_logo_color
+  - action: action_listen
+  - action: action_create_policy_document
 
-- story: user feedback
-  steps:
-  - intent: policy_observations
-  - action: action_handle_policy_feedback
+# - story: user feedback
+#   steps:
+#   - intent: policy_observations
+#   - action: action_handle_policy_feedback

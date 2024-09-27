@@ -101,7 +101,7 @@ def prompt_engineering(prompt):
 PROMPT_TEMPLATE = """
 You are an expert in drafting HR policies. I am currently working on creating a {job_type}. 
 The policy will include the following condition: {flexible_work_option}. 
-Based on this specific clause, please provide 3 detailed questions to consider, separated by pipe character (|) only.
+Based on this specific clause, please provide 2 detailed questions to consider, separated by pipe character (|) only.
 And avoid generating tail and compound questions in any circumtances.
 """
 
@@ -390,8 +390,7 @@ class ActionSetQuestion(Action):
         # question_index = index
         if index >= len(question_list):
             # return [FollowupAction("action_store_response")]
-            return [FollowupAction("action_select_applied_context"),
-                    SlotSet("question_index", 0)]
+            return [FollowupAction("action_select_applied_context")]
         else:
             dispatcher.utter_message(text=question_list[index])
             return[SlotSet("question0", question_list[index])]
@@ -418,7 +417,7 @@ class ActionSelectAppliedContexts(Action):
                 })
         dispatcher.utter_message(text="Select the work situations where flexible work policy you would like to apply:", buttons=buttons)
 
-        return []
+        return [SlotSet("question_index", 0)]
 
 APPLIED_CONTEXT_PROMPT_TEMPLATE ="""
 You are an expert in drafting HR policies. I am currently working on creating a {job_type}. 
@@ -540,7 +539,7 @@ class ActionSelectEligibilityCriteria(Action):
                 })
         dispatcher.utter_message(text="Select the eligibility criteria would you like to include in your flexible work policy:", buttons=buttons)
 
-        return []
+        return [SlotSet("question_index", 0)]
     
 ELIGIBILITY_CRITERIA_PROMPT_TEMPLATE = """ 
 You are an expert in drafting HR policies. I am currently working on creating a {job_type}. 
@@ -768,7 +767,7 @@ If there are any missing element in the provided policy, Return the missing elem
 
 missing_element_prompt = """
 "Generate questions that address the following missing elements in a Remote Work HR policy: {missing_elements}
-Avoid compound and tail questions under any circumstances. 
+Avoid compound and tail questions under any circumstances and seperate question by pipe character (|) only. 
 Do not provide any additional information beyond the questions"
 
 Separator: |
