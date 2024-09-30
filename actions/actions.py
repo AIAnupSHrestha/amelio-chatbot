@@ -33,18 +33,13 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
-import ollama
 from reportlab.pdfgen import canvas 
 from reportlab.pdfbase.ttfonts import TTFont 
 from reportlab.pdfbase import pdfmetrics 
 from reportlab.lib import colors 
-import mysql.connector
 
 import cohere
 
-
-# import mysql.connector
-# from mysql.connector import errorcode
 
 load_dotenv()
 
