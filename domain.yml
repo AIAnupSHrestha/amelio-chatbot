@@ -165,8 +165,14 @@ actions:
 - action_create_policy_document
 - action_missing_policy
 - action_handle_missing_element
+<<<<<<< Updated upstream
 - action_ask_question_missing_element
 - action_validate_missing_element_question
+=======
+- action_company_name
+- action_set_company_name
+- action_logo_and_brand_color
+>>>>>>> Stashed changes
 
 session_config:
   session_expiration_time: 60
