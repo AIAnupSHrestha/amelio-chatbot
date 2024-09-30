@@ -1059,8 +1059,9 @@ class ActionCreatePolicyDocument(Action):
             run.font.size = Pt(12)
 
         # Save the document
-        doc.save(f'{company_name}_HR_document.docx')
-        return "Document Created..."
+        file_path = f'/var/www/html/{company_name}_HR_document.docx'
+        doc.save(file_path)
+        return "Document Saved"
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
         company_name = tracker.get_slot("company_name")
@@ -1071,5 +1072,6 @@ class ActionCreatePolicyDocument(Action):
         eligibility_criteria_response = tracker.get_slot("eligibility_criteria_response")
         missing_response = tracker.get_slot("missing_element_response")
         self.createDocument(company_name, brand_color,brand_logo, flexible_response, applied_context_response, eligibility_criteria_response, missing_response)
-        dispatcher.utter_message(text="HR policy documnet created. Thank you for time!!")
+        download_url = f"http://52.214.52.206/{company_name}_HR_document.docx"
+        dispatcher.utter_message(text=f"HR policy document created. You can download it from: {download_url}")
         return[]
