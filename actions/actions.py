@@ -1061,7 +1061,8 @@ class ActionCreatePolicyDocument(Action):
         # Save the document
         file_path = f'/var/www/html/{company_name}_HR_document.docx'
         doc.save(file_path)
-        return "Document Saved"
+        print("Document Created")
+        return []
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
         company_name = tracker.get_slot("company_name")

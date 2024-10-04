@@ -134,7 +134,7 @@ rules:
 - rule: logo
   steps:
   - intent: test_data
-  - action: action_logo
+  - action: action_confirm_brand_logo_color
 
 - rule: color
   steps:
