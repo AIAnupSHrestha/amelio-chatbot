@@ -6,6 +6,8 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from datetime import datetime
 
+from summaryTest import generate_summary
+
 
 def DocumentHeader(doc, BrandColor, BrandLogo):
     header = doc.sections[0].header
@@ -200,12 +202,20 @@ def QuestionAnswer(doc): #, flexible_response, applied_context_response, eligibi
     return ("Question Answered Created !!")    
 
 
-def createDocument(): #company_name, brand_color,brand_logo, flexible_response, applied_response, eligibility_response, missing_response):
+def createDocument(): #self, company_name, brand_color,brand_logo, flexible_response, applied_response, eligibility_response, missing_response):
     
 
     company_name = "CompanyName"
-    doc = Document("OpenAI - Document generator-Test project.docx")
-    flexible_response = ["response1", "response2", "response3"]
+    doc = Document("Working time planning policy.docx")
+    # flexible_response = ["response1", "response2", "response3"]
+    Question = [
+    "How will the success of this pilot project be measured during the experimental phase, and what key performance indicators (KPIs) will be used to ensure an objective evaluation",
+    "What criteria will be used to determine whether the remote work policy should be permanently integrated or suspended after the evaluation period, and who will be involved in making this decision?"
+    ]
+    Answer = [
+    "Productivity, employee satisfaction, and cost savings.",
+    "The decision to permanently integrate or suspend the remote work policy will be based on factors such as employee productivity, job satisfaction, company culture, and operational efficiency. A committee composed of HR, managers, and subject matter experts will evaluate these factors and make the final decision."
+    ]
     # ForntPage = doc.sections[0]
     # ForntPage.top_margin = Inches(0)  
     # ForntPage.header_distance = Inches(0)
@@ -238,7 +248,7 @@ def createDocument(): #company_name, brand_color,brand_logo, flexible_response, 
         #     paragraph = doc.add_paragraph(item, style='ListBullet')
 
 
-
+    # summary = generate_summary(Question, Answer)
     for section in doc.sections:
         if section.start_type == 2: 
             # print(f"Section start type: {section.start_type}")
@@ -249,23 +259,27 @@ def createDocument(): #company_name, brand_color,brand_logo, flexible_response, 
             # You can also access the content of paragraphs within the section
             # print("Section content:")
             for paragraph in doc.paragraphs:
-                text_to_replace = "Everyone's responsibilities"
-                if paragraph.text == text_to_replace:
-                    print(f"Paragraph text: {paragraph.text}")
-                    for run in paragraph.runs:
-                        if text_to_replace in run.text:
-                            run.text = run.text.replace(text_to_replace, "Flexible Work Policy")
-                for item in flexible_response:
-                    p = doc.add_paragraph('•  ' + item)
-                    p.paragraph_format.left_indent = Inches(0.5)
-                    # p.add_run(f"- {item}")#.bold = True
-                    if "Immediate supervisor:" in paragraph.text:
-                        # Insert the list paragraph before it
-                        # Move the cursor to the paragraph before the target
-                        doc._element.body.insert(doc._element.body.index(paragraph._element), p._element)
+                print(paragraph)
+                # text_to_replace = "Everyone's responsibilities"
+                # if paragraph.text == text_to_replace:
+                #     print(f"Paragraph text: {paragraph.text}")
+                #     for run in paragraph.runs:
+                #         if text_to_replace in run.text:
+                #             run.text = run.text.replace(text_to_replace, "Flexible Work Policy")
 
-    doc.save(f'{company_name}_HR_document.docx')
-    # return "Document Created..."
+                # # for item in flexible_response:
+                #     # p = doc.add_paragraph(summary)
+                #     # p.paragraph_format.left_indent = Inches(0.5)
+                #     # p.add_run(f"- {item}")#.bold = True
+                # if "Immediate supervisor:" in paragraph.text:
+                #     p = doc.add_paragraph(summary)
+                #     p.paragraph_format.left_indent = Inches(0.5)
+                #         # Insert the list paragraph before it
+                #         # Move the cursor to the paragraph before the target
+                #     doc._element.body.insert(doc._element.body.index(paragraph._element), p._element)
+
+    # doc.save(f'{company_name}_HR_document.docx')
+    return "Document Created..."
 
 # company_name = "test Company"
 # brand_color = "#FF0000"
@@ -276,7 +290,7 @@ def createDocument(): #company_name, brand_color,brand_logo, flexible_response, 
 # eligibility_criteria_response = tracker.get_slot("eligibility_criteria_response")
 # missing_response = tracker.get_slot("missing_element_response")
 document = createDocument() #(company_name, brand_color,brand_logo, flexible_response, applied_response, eligibility_response, missing_response)
-# print(document)
+print(document)
 
 
 

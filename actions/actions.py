@@ -845,7 +845,9 @@ class ActionAskQMiuestoinssingElement(Action):
             return [ FollowupAction("action_logo"),
                     SlotSet("question_index", 0)]
         else:
-            dispatcher.utter_message(text=question_list[index])
+            
+
+            dispatcher.utter_message(text=f"{index + 1}. {question_list[index]}")
             return[SlotSet("question0", question_list[index])]
     
 class ActionValidateMissingElementQuestion(Action):
@@ -942,32 +944,90 @@ class ActionConfirmBrandLogoColor(Action):
         return[SlotSet("brand_color", brand_color),
                FollowupAction("action_create_policy_document")]
 
-    
+summarize_prompt_template = """
+summarize the following Q&A into a concise, coherent paragraph that captures the key points and the policy's main details:
+
+Questions and Responses: {QA}
+
+Instructions:
+- Summarize the responses into a well-structured paragraph.
+- Focus on capturing the essence of the HR policy being developed.
+- Highlight the key components, decisions, and any important rules or guidelines mentioned in the answers."
+"""
+
+def summarizeQA(Question,Response):
+    QA = "\n".join([f"Q: {q}\nA: {a}" for q, a in zip(Question, Response)])
+    prompt = summarize_prompt_template.format(QA = QA)
+    return prompt_engineering(prompt=prompt)
+
+
 class ActionCreatePolicyDocument(Action):
     def name(self):
         return "action_create_policy_document"
     
-    
-    def createDocument(self, company_name, brand_color, brand_logo, flexible_response, applied_response, eligibility_response, missing_response):
+    def createDocument(self, company_name, brand_color, brand_logo, flexible_work_option, flexible_response, applied_context_option, applied_response, eligibility_criteria_option, eligibility_response, missing_response):
         flexible_question = flexible_work_questions[0]
         applied_question = applied_content_questions[0]
         eligibility_question = eligibility_criteria_question[0]
         missing_question = missing_element_questions[0]
 
-        doc = Document()
+        doc = Document("Working time planning policy.docx")
 
-        table = doc.add_table(rows=1, cols=1)
-        table.autofit = False
-        table.columns[0].width = Inches(10)
-        cell = table.cell(0, 0)
+        summary = summarizeQA(flexible_question, flexible_response)
+        # print(summary)
 
-        # Fill the cell with color
-        # Use RGBColor for color specification
-        cell._element.get_or_add_tcPr().append(
-            OxmlElement('w:shd', {
-                qn('w:fill'): brand_color
-            })
-        )
+
+        # Loop through the paragraphs in the document
+        for para in doc.paragraphs:
+            if para.text == "Flexible hours":
+                style_to_apply = para.style.name
+                summary = summarizeQA(flexible_question, flexible_response)
+                flexible_summary = doc.add_paragraph(f"• {flexible_work_option}: {summary}")
+                para._element.addnext(flexible_summary._element)
+
+            if para.text == "Period of application":
+                summary = summarizeQA(applied_question, applied_response)
+                period_summary = doc.add_paragraph(f"• {applied_context_option}: {summary}")
+                para._element.addnext(period_summary._element)
+
+            if para.text == "Admissibility":
+                summary = summarizeQA(missing_question, missing_response)
+                missing_ele_summary = doc.add_paragraph(f"{summary}")
+                para._element.addnext(missing_ele_summary._element)
+
+                missing_ele = doc.add_paragraph("Missing Element\n", style=style_to_apply)
+                # missing_ele_summary = doc.add_run(f"• {eligibility_criteria_option}: {summary}")
+                para._element.addnext(missing_ele._element)
+
+                summary = summarizeQA(eligibility_question, eligibility_response)
+                period_summary = doc.add_paragraph(f"• {eligibility_criteria_option}: {summary}")
+                para._element.addnext(period_summary._element)
+
+                # new_para = doc.add_paragraph(para.text)
+                # target_paragraph.style = style_to_apply
+                # new_paragraph.style = style_to_apply
+                # Flag = True
+                break 
+
+    
+    # if Flag:
+    #     doc.save(f'{company_name}_HR_document.docx')
+    #     return "Document Created..."
+    
+    # return "Document"
+
+        # table = doc.add_table(rows=1, cols=1)
+        # table.autofit = False
+        # table.columns[0].width = Inches(10)
+        # cell = table.cell(0, 0)
+
+        # # Fill the cell with color
+        # # Use RGBColor for color specification
+        # cell._element.get_or_add_tcPr().append(
+        #     OxmlElement('w:shd', {
+        #         qn('w:fill'): brand_color
+        #     })
+        # )
 
         
 
@@ -984,95 +1044,106 @@ class ActionCreatePolicyDocument(Action):
         # run_text.font.name = 'Times New Roman'
         # run_text.font.size = Pt(14)
         # run_text.bold = True
-        doc.add_paragraph("\n")
-        doc.add_picture(brand_logo, width=Inches(0.5), height=Inches(0.5))
-        doc.add_paragraph(company_name)
+        # doc.add_paragraph("\n")
+        # doc.add_picture(brand_logo, width=Inches(0.5), height=Inches(0.5))
+        # doc.add_paragraph(company_name)
 
-        # Add a title
-        title = doc.add_heading('HR Policy', level=1)
-        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run = title.runs[0]
-        run.font.color.rgb = RGBColor(0,0,0)
+        # # Add a title
+        # title = doc.add_heading('HR Policy', level=1)
+        # title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        # run = title.runs[0]
+        # run.font.color.rgb = RGBColor(0,0,0)
         
-        policy = doc.add_heading('Policy Question Answers', level=2)
-        policy.add_run("\n")
-        run = policy.runs[0]
-        run.font.color.rgb = RGBColor(0,0,0)
-        run.font.name = 'Times New Roman' 
-        run.font.size = Pt(14)
-        policy.add_run("\n")
+        # policy = doc.add_heading('Policy Question Answers', level=2)
+        # policy.add_run("\n")
+        # run = policy.runs[0]
+        # run.font.color.rgb = RGBColor(0,0,0)
+        # run.font.name = 'Times New Roman' 
+        # run.font.size = Pt(14)
+        # policy.add_run("\n")
 
-        flexiblePolicy = doc.add_paragraph()
-        run = flexiblePolicy.add_run("Flexible work policy")
-        run.bold = True
-        flexiblePolicy.add_run("\n")
-        for num in range(len(flexible_question)):
-            run = flexiblePolicy.add_run(flexible_question[num])
-            flexiblePolicy.add_run("\n")
-            run = flexiblePolicy.add_run(f"Ans: {flexible_response[num]}")
-            flexiblePolicy.add_run("\n")
+        # flexiblePolicy = doc.add_paragraph()
+        # run = flexiblePolicy.add_run("Flexible work policy")
+        # run.bold = True
+        # flexiblePolicy.add_run("\n")
+        # for num in range(len(flexible_question)):
+        #     run = flexiblePolicy.add_run(flexible_question[num])
+        #     flexiblePolicy.add_run("\n")
+        #     run = flexiblePolicy.add_run(f"Ans: {flexible_response[num]}")
+        #     flexiblePolicy.add_run("\n")
 
-        for run in flexiblePolicy.runs:
-            run.font.name = 'Times New Roman'
-            run.font.size = Pt(12)
+        # for run in flexiblePolicy.runs:
+        #     run.font.name = 'Times New Roman'
+        #     run.font.size = Pt(12)
 
-        appliedContext = doc.add_paragraph()
-        run = appliedContext.add_run("Applied Context")
-        run.bold = True
-        appliedContext.add_run("\n")
-        for num in range(len(applied_question)):
-            run = appliedContext.add_run(applied_question[num])
-            appliedContext.add_run("\n")
-            run = appliedContext.add_run(f"Ans: {applied_response[num]}")
-            appliedContext.add_run("\n")
+        # appliedContext = doc.add_paragraph()
+        # run = appliedContext.add_run("Applied Context")
+        # run.bold = True
+        # appliedContext.add_run("\n")
+        # for num in range(len(applied_question)):
+        #     run = appliedContext.add_run(applied_question[num])
+        #     appliedContext.add_run("\n")
+        #     run = appliedContext.add_run(f"Ans: {applied_response[num]}")
+        #     appliedContext.add_run("\n")
 
-        for run in appliedContext.runs:
-            run.font.name = 'Times New Roman'
-            run.font.size = Pt(12)
+        # for run in appliedContext.runs:
+        #     run.font.name = 'Times New Roman'
+        #     run.font.size = Pt(12)
 
-        eligibilityCriteria = doc.add_paragraph()
-        run = eligibilityCriteria.add_run("Eligibility Criteria")
-        run.bold = True
-        eligibilityCriteria.add_run("\n")
-        for num in range(len(eligibility_question)):
-            run = eligibilityCriteria.add_run(eligibility_question[num])
-            eligibilityCriteria.add_run("\n")
-            run = eligibilityCriteria.add_run(f"Ans: {eligibility_response[num]}")
-            eligibilityCriteria.add_run("\n")
+        # eligibilityCriteria = doc.add_paragraph()
+        # run = eligibilityCriteria.add_run("Eligibility Criteria")
+        # run.bold = True
+        # eligibilityCriteria.add_run("\n")
+        # for num in range(len(eligibility_question)):
+        #     run = eligibilityCriteria.add_run(eligibility_question[num])
+        #     eligibilityCriteria.add_run("\n")
+        #     run = eligibilityCriteria.add_run(f"Ans: {eligibility_response[num]}")
+        #     eligibilityCriteria.add_run("\n")
 
-        for run in eligibilityCriteria.runs:
-            run.font.name = 'Times New Roman'
-            run.font.size = Pt(12)
+        # for run in eligibilityCriteria.runs:
+        #     run.font.name = 'Times New Roman'
+        #     run.font.size = Pt(12)
 
-        missingElement = doc.add_paragraph()
-        run = missingElement.add_run("Missing Element")
-        run.bold = True
-        missingElement.add_run("\n")
-        for num in range(len(missing_question)):
-            run = missingElement.add_run(missing_question[num])
-            missingElement.add_run("\n")
-            run = missingElement.add_run(f"Ans: {missing_response[num]}")
-            missingElement.add_run("\n")
+        # missingElement = doc.add_paragraph()
+        # run = missingElement.add_run("Missing Element")
+        # run.bold = True
+        # missingElement.add_run("\n")
+        # for num in range(len(missing_question)):
+        #     run = missingElement.add_run(missing_question[num])
+        #     missingElement.add_run("\n")
+        #     run = missingElement.add_run(f"Ans: {missing_response[num]}")
+        #     missingElement.add_run("\n")
 
-        for run in missingElement.runs:
-            run.font.name = 'Times New Roman'
-            run.font.size = Pt(12)
+        # for run in missingElement.runs:
+        #     run.font.name = 'Times New Roman'
+        #     run.font.size = Pt(12)
 
         # Save the document
         file_path = f'/var/www/html/{company_name}_HR_document.docx'
         doc.save(file_path)
+        doc.save(f'{company_name}_HR_document.docx')
         print("Document Created")
         return []
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any])  -> List[Dict[Text, Any]]:
+        flexible_work_option = tracker.get_slot('flexible_work_option')
+        selected_policy = tracker.get_slot('policy_name')
+        flexible_work_option = predefined_questions[selected_policy].get(flexible_work_option).split(":")[0].strip()
+
+        applied_context_options = tracker.get_slot('applied_context_option')
+        applied_context_option = applied_questions["applied_context"].get(applied_context_options).split(":")[0].strip()
+
+        eligibility_criteria_options = tracker.get_slot('eligibility_criteria_option')
+        eligibility_criteria_option = eligibility_criteria_questions["eligibility_criteria"].get(eligibility_criteria_options)
+
         company_name = tracker.get_slot("company_name")
         brand_color = tracker.get_slot("brand_color")
-        brand_logo = tracker.get_slot("logo_url")
+        brand_logo = "logo-search-grid-1x.jpg" #tracker.get_slot("logo_url")
         flexible_response = tracker.get_slot("user_response")
         applied_context_response = tracker.get_slot("applied_context_response")
         eligibility_criteria_response = tracker.get_slot("eligibility_criteria_response")
         missing_response = tracker.get_slot("missing_element_response")
-        self.createDocument(company_name, brand_color,brand_logo, flexible_response, applied_context_response, eligibility_criteria_response, missing_response)
+        self.createDocument(company_name, brand_color,brand_logo, flexible_work_option, flexible_response, applied_context_option, applied_context_response, eligibility_criteria_option, eligibility_criteria_response, missing_response)
         download_url = f"http://52.214.52.206/{company_name}_HR_document.docx"
         dispatcher.utter_message(text=f"HR policy document created. You can download it from: {download_url}")
         return[]

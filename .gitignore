@@ -1,4 +1,5 @@
 models/*
+testing/*
 .rasa/*
 .DS_Store
 __pycache__/*
